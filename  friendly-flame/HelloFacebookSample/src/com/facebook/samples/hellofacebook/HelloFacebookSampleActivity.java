@@ -38,6 +38,7 @@ import android.widget.TextView;
 
 import android.content.Intent;
 
+
 import com.facebook.*;
 import com.facebook.model.GraphObject;
 import com.facebook.model.GraphPlace;
@@ -47,7 +48,7 @@ import com.facebook.widget.*;
 import java.util.*;
 
 
-public class HelloFacebookSampleActivity extends Activity {
+public class HelloFacebookSampleActivity extends Activity implements OnClickListener {
 
     private static final List<String> PERMISSIONS = Arrays.asList("publish_actions");
     private static final Location SEATTLE_LOCATION = new Location("") {
@@ -59,7 +60,7 @@ public class HelloFacebookSampleActivity extends Activity {
 
     private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
 
-    private Button createEventButton;
+    private Button createEvent;
     private Button showFriendsEvents;
     private Button showMyEvents;
     
@@ -125,42 +126,36 @@ public class HelloFacebookSampleActivity extends Activity {
 
         //BUTTONS
         
-        //BUTTON FOR CREATING EVENTS
-        createEventButton = (Button) findViewById(R.id.createEventButton);
-        createEventButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-            	//muss ich noch Šndern
-                //onClickPostStatusUpdate();
-            	
-            	
-            }
-        });
-
-        //BUTTON FOR SHOWING EVENTS
+        createEvent = (Button) findViewById(R.id.createEventButton);
+        createEvent.setOnClickListener(this);
+        
         showFriendsEvents = (Button) findViewById(R.id.showFriendsEventsButton);
-        showFriendsEvents.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-            	//muss ich noch Šndern
-                //onClickPostPhoto();
-            	
-            }
-        });
+        showFriendsEvents.setOnClickListener(this);
 
         
         showMyEvents = (Button) findViewById(R.id.showMyEventsButton);
-        showMyEvents.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-            	//muss ich noch Šndern
-            	
-            }
-        });
-
+        showMyEvents.setOnClickListener(this);
+        
+        
        
         controlsContainer = (ViewGroup) findViewById(R.id.main_ui_container);
 
 
        
     }
+    
+    @Override
+	public void onClick(View arg0) {
+		switch (arg0.getId()) {
+			case R.id.showFriendsEventsButton:
+
+			case R.id.showMyEventsButton:
+		
+		}
+
+		
+		
+	}
 
     @Override
     protected void onResume() {
@@ -216,7 +211,7 @@ public class HelloFacebookSampleActivity extends Activity {
         Session session = Session.getActiveSession();
         boolean enableButtons = (session != null && session.isOpened());
 
-        createEventButton.setEnabled(enableButtons);
+        createEvent.setEnabled(enableButtons);
         showFriendsEvents.setEnabled(enableButtons);
         showMyEvents.setEnabled(enableButtons);
 
