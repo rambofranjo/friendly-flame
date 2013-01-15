@@ -16,6 +16,7 @@
 
 package com.facebook.samples.hellofacebook;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -29,10 +30,14 @@ import android.support.v4.app.FragmentManager;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import android.content.Intent;
+
 import com.facebook.*;
 import com.facebook.model.GraphObject;
 import com.facebook.model.GraphPlace;
@@ -41,7 +46,8 @@ import com.facebook.widget.*;
 
 import java.util.*;
 
-public class HelloFacebookSampleActivity extends FragmentActivity {
+
+public class HelloFacebookSampleActivity extends Activity {
 
     private static final List<String> PERMISSIONS = Arrays.asList("publish_actions");
     private static final Location SEATTLE_LOCATION = new Location("") {
@@ -122,7 +128,9 @@ public class HelloFacebookSampleActivity extends FragmentActivity {
         createEventButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
             	//muss ich noch Šndern
-                onClickPostStatusUpdate();
+                //onClickPostStatusUpdate();
+            	
+            	
             }
         });
 
@@ -131,7 +139,8 @@ public class HelloFacebookSampleActivity extends FragmentActivity {
         showFriendsEvents.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
             	//muss ich noch Šndern
-                onClickPostPhoto();
+                //onClickPostPhoto();
+            	
             }
         });
 
@@ -140,43 +149,21 @@ public class HelloFacebookSampleActivity extends FragmentActivity {
         showMyEvents.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
             	//muss ich noch Šndern
-                onClickPickFriends();
+            	
             }
         });
 
         pickPlaceButton = (Button) findViewById(R.id.pickPlaceButton);
         pickPlaceButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                onClickPickPlace();
+               
             }
         });
 
         controlsContainer = (ViewGroup) findViewById(R.id.main_ui_container);
 
-        final FragmentManager fm = getSupportFragmentManager();
-        Fragment fragment = fm.findFragmentById(R.id.fragment_container);
-        if (fragment != null) {
-            // If we're being re-created and have a fragment, we need to a) hide the main UI controls and
-            // b) hook up its listeners again.
-            controlsContainer.setVisibility(View.GONE);
-            if (fragment instanceof FriendPickerFragment) {
-                setFriendPickerListeners((FriendPickerFragment) fragment);
-            } else if (fragment instanceof PlacePickerFragment) {
-                setPlacePickerListeners((PlacePickerFragment) fragment);
-            }
-        }
 
-        // Listen for changes in the back stack so we know if a fragment got popped off because the user
-        // clicked the back button.
-        fm.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                if (fm.getBackStackEntryCount() == 0) {
-                    // We need to re-show our UI.
-                    controlsContainer.setVisibility(View.VISIBLE);
-                }
-            }
-        });
+       
     }
 
     @Override
@@ -256,10 +243,8 @@ public class HelloFacebookSampleActivity extends FragmentActivity {
 
         switch (previouslyPendingAction) {
             case POST_PHOTO:
-                postPhoto();
                 break;
             case POST_STATUS_UPDATE:
-                postStatusUpdate();
                 break;
         }
     }
@@ -287,9 +272,6 @@ public class HelloFacebookSampleActivity extends FragmentActivity {
                 .show();
     }
 
-    private void onClickPostStatusUpdate() {
-        performPublish(PendingAction.POST_STATUS_UPDATE);
-    }
 
     private void postStatusUpdate() {
         if (user != null && hasPublishPermission()) {
@@ -307,24 +289,8 @@ public class HelloFacebookSampleActivity extends FragmentActivity {
         }
     }
 
-    private void onClickPostPhoto() {
-        performPublish(PendingAction.POST_PHOTO);
-    }
-
-    private void postPhoto() {
-        if (hasPublishPermission()) {
-            Bitmap image = BitmapFactory.decodeResource(this.getResources(), R.drawable.icon);
-            Request request = Request.newUploadPhotoRequest(Session.getActiveSession(), image, new Request.Callback() {
-                @Override
-                public void onCompleted(Response response) {
-                    showPublishResult(getString(R.string.photo_post), response.getGraphObject(), response.getError());
-                }
-            });
-            request.executeAsync();
-        } else {
-            pendingAction = PendingAction.POST_PHOTO;
-        }
-    }
+    
+  
 
     private void showPickerFragment(PickerFragment<?> fragment) {
         fragment.setOnErrorListener(new PickerFragment.OnErrorListener() {
@@ -334,99 +300,17 @@ public class HelloFacebookSampleActivity extends FragmentActivity {
             }
         });
 
-        FragmentManager fm = getSupportFragmentManager();
-        fm.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
+        
 
         controlsContainer.setVisibility(View.GONE);
-
-        // We want the fragment fully created so we can use it immediately.
-        fm.executePendingTransactions();
 
         fragment.loadData(false);
     }
 
-    private void onClickPickFriends() {
-        final FriendPickerFragment fragment = new FriendPickerFragment();
+    
 
-        setFriendPickerListeners(fragment);
+    
 
-        showPickerFragment(fragment);
-    }
-
-    private void setFriendPickerListeners(final FriendPickerFragment fragment) {
-        fragment.setOnDoneButtonClickedListener(new FriendPickerFragment.OnDoneButtonClickedListener() {
-            @Override
-            public void onDoneButtonClicked(PickerFragment<?> pickerFragment) {
-                onFriendPickerDone(fragment);
-            }
-        });
-    }
-
-    private void onFriendPickerDone(FriendPickerFragment fragment) {
-        FragmentManager fm = getSupportFragmentManager();
-        fm.popBackStack();
-
-        String results = "";
-
-        Collection<GraphUser> selection = fragment.getSelection();
-        if (selection != null && selection.size() > 0) {
-            ArrayList<String> names = new ArrayList<String>();
-            for (GraphUser user : selection) {
-                names.add(user.getName());
-            }
-            results = TextUtils.join(", ", names);
-        } else {
-            results = getString(R.string.no_friends_selected);
-        }
-
-        showAlert(getString(R.string.you_picked), results);
-    }
-
-    private void onPlacePickerDone(PlacePickerFragment fragment) {
-        FragmentManager fm = getSupportFragmentManager();
-        fm.popBackStack();
-
-        String result = "";
-
-        GraphPlace selection = fragment.getSelection();
-        if (selection != null) {
-            result = selection.getName();
-        } else {
-            result = getString(R.string.no_place_selected);
-        }
-
-        showAlert(getString(R.string.you_picked), result);
-    }
-
-    private void onClickPickPlace() {
-        final PlacePickerFragment fragment = new PlacePickerFragment();
-        fragment.setLocation(SEATTLE_LOCATION);
-        fragment.setTitleText(getString(R.string.pick_seattle_place));
-
-        setPlacePickerListeners(fragment);
-
-        showPickerFragment(fragment);
-    }
-
-    private void setPlacePickerListeners(final PlacePickerFragment fragment) {
-        fragment.setOnDoneButtonClickedListener(new PlacePickerFragment.OnDoneButtonClickedListener() {
-            @Override
-            public void onDoneButtonClicked(PickerFragment<?> pickerFragment) {
-                onPlacePickerDone(fragment);
-            }
-        });
-        fragment.setOnSelectionChangedListener(new PlacePickerFragment.OnSelectionChangedListener() {
-            @Override
-            public void onSelectionChanged(PickerFragment<?> pickerFragment) {
-                if (fragment.getSelection() != null) {
-                    onPlacePickerDone(fragment);
-                }
-            }
-        });
-    }
 
     private void showAlert(String title, String message) {
         new AlertDialog.Builder(this)
@@ -440,20 +324,7 @@ public class HelloFacebookSampleActivity extends FragmentActivity {
         Session session = Session.getActiveSession();
         return session != null && session.getPermissions().contains("publish_actions");
     }
-
-    private void performPublish(PendingAction action) {
-        Session session = Session.getActiveSession();
-        if (session != null) {
-            pendingAction = action;
-            if (hasPublishPermission()) {
-                // We can do the action right away.
-                handlePendingAction();
-            } else {
-                // We need to get new permissions, then complete the action when we get called back.
-                session.requestNewPublishPermissions(new Session.NewPermissionsRequest(this, PERMISSIONS));
-            }
-        }
-    }
+   
     
     //to calculate the outgoingness of a user
     private float[] calculateOutgoingness() {
