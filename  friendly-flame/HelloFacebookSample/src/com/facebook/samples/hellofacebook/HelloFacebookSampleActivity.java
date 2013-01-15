@@ -62,7 +62,9 @@ public class HelloFacebookSampleActivity extends Activity {
     private Button createEventButton;
     private Button showFriendsEvents;
     private Button showMyEvents;
-    private Button pickPlaceButton;
+    
+    
+    
     private LoginButton loginButton;
     private ProfilePictureView profilePictureView;
     private TextView greeting;
@@ -153,13 +155,7 @@ public class HelloFacebookSampleActivity extends Activity {
             }
         });
 
-        pickPlaceButton = (Button) findViewById(R.id.pickPlaceButton);
-        pickPlaceButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-               
-            }
-        });
-
+       
         controlsContainer = (ViewGroup) findViewById(R.id.main_ui_container);
 
 
@@ -223,7 +219,6 @@ public class HelloFacebookSampleActivity extends Activity {
         createEventButton.setEnabled(enableButtons);
         showFriendsEvents.setEnabled(enableButtons);
         showMyEvents.setEnabled(enableButtons);
-        pickPlaceButton.setEnabled(enableButtons);
 
         if (enableButtons && user != null) {
             profilePictureView.setProfileId(user.getId());
@@ -252,65 +247,6 @@ public class HelloFacebookSampleActivity extends Activity {
     private interface GraphObjectWithId extends GraphObject {
         String getId();
     }
-
-    private void showPublishResult(String message, GraphObject result, FacebookRequestError error) {
-        String title = null;
-        String alertMessage = null;
-        if (error == null) {
-            title = getString(R.string.success);
-            String id = result.cast(GraphObjectWithId.class).getId();
-            alertMessage = getString(R.string.successfully_posted_post, message, id);
-        } else {
-            title = getString(R.string.error);
-            alertMessage = error.getErrorMessage();
-        }
-
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(alertMessage)
-                .setPositiveButton(R.string.ok, null)
-                .show();
-    }
-
-
-    private void postStatusUpdate() {
-        if (user != null && hasPublishPermission()) {
-            final String message = getString(R.string.status_update, user.getFirstName(), (new Date().toString()));
-            Request request = Request
-                    .newStatusUpdateRequest(Session.getActiveSession(), message, new Request.Callback() {
-                        @Override
-                        public void onCompleted(Response response) {
-                            showPublishResult(message, response.getGraphObject(), response.getError());
-                        }
-                    });
-            request.executeAsync();
-        } else {
-            pendingAction = PendingAction.POST_STATUS_UPDATE;
-        }
-    }
-
-    
-  
-
-    private void showPickerFragment(PickerFragment<?> fragment) {
-        fragment.setOnErrorListener(new PickerFragment.OnErrorListener() {
-            @Override
-            public void onError(PickerFragment<?> pickerFragment, FacebookException error) {
-                showAlert(getString(R.string.error), error.getMessage());
-            }
-        });
-
-        
-
-        controlsContainer.setVisibility(View.GONE);
-
-        fragment.loadData(false);
-    }
-
-    
-
-    
-
 
     private void showAlert(String title, String message) {
         new AlertDialog.Builder(this)
