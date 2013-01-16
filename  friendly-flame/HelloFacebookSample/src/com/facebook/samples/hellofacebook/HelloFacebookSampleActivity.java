@@ -211,6 +211,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 
         if (enableButtons && user != null) {
         	
+        	//make profile picture and buttons visible and enabled
             profilePictureView.setProfileId(user.getId());
             profilePictureView.setVisibility(View.VISIBLE);
             greeting.setText(getString(R.string.hello_user, user.getFirstName()));
@@ -224,6 +225,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
             layoutView.setBackgroundColor(Color.HSVToColor(flame.calculateOutgoingness()));
             
         } else {
+        	//hide profile picture and buttons
         	profilePictureView.setVisibility(View.GONE);
             profilePictureView.setProfileId(null);
             greeting.setText(null);
