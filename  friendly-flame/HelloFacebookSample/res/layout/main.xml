@@ -62,18 +62,21 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="Create events"
+                    android:visibility="gone"
                     />
             <Button
                     android:id="@+id/showFriendsEventsButton"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="Show friends events"
+                    android:visibility="gone"
                     />
             <Button
                     android:id="@+id/showMyEventsButton"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="Show my events"
+                    android:visibility="gone"
                     />
 
             <Button
@@ -81,7 +84,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="Pick Place"
-                    android:visibility="gone"/>
+                    android:visibility="gone"
                     />
         </LinearLayout>
     </LinearLayout>

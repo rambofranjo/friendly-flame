@@ -63,9 +63,6 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private Button createEvent;
     private Button showFriendsEvents;
     private Button showMyEvents;
-    
-    
-    
     private LoginButton loginButton;
     private ProfilePictureView profilePictureView;
     private TextView greeting;
@@ -73,6 +70,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private ViewGroup controlsContainer;
     private GraphUser user;
     private View layoutView;
+    private Flame flame;
 
     private enum PendingAction {
         NONE,
@@ -101,11 +99,6 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         }
 
         setContentView(R.layout.main);
-        
-        //set color of the background according to outgoingness
-        layoutView= findViewById(R.id.main_ui_container); 
-        layoutView.setBackgroundColor(Color.HSVToColor(calculateOutgoingness()));
-
 
         //LOGIN BUTTON
         loginButton = (LoginButton) findViewById(R.id.login_button);
@@ -147,8 +140,8 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     @Override
 	public void onClick(View arg0) {
 		switch (arg0.getId()) {
+		case R.id.createEventButton:
 			case R.id.showFriendsEventsButton:
-
 			case R.id.showMyEventsButton:
 		
 		}
@@ -215,12 +208,33 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         showFriendsEvents.setEnabled(enableButtons);
         showMyEvents.setEnabled(enableButtons);
 
+
         if (enableButtons && user != null) {
+        	
             profilePictureView.setProfileId(user.getId());
+            profilePictureView.setVisibility(View.VISIBLE);
             greeting.setText(getString(R.string.hello_user, user.getFirstName()));
+            createEvent.setVisibility(View.VISIBLE);
+            showFriendsEvents.setVisibility(View.VISIBLE);
+            showMyEvents.setVisibility(View.VISIBLE);
+            
+            //set color of the background according to outgoingness
+            flame = new Flame();
+            layoutView= findViewById(R.id.main_ui_container); 
+            layoutView.setBackgroundColor(Color.HSVToColor(flame.calculateOutgoingness()));
+            
         } else {
+        	profilePictureView.setVisibility(View.GONE);
             profilePictureView.setProfileId(null);
             greeting.setText(null);
+            createEvent.setVisibility(View.GONE);
+            showFriendsEvents.setVisibility(View.GONE);
+            showMyEvents.setVisibility(View.GONE);
+            
+            //set color of the background according to outgoingness
+            flame = new Flame();
+            layoutView= findViewById(R.id.main_ui_container); 
+            layoutView.setBackgroundColor(Color.WHITE);
         }
     }
 
@@ -256,28 +270,4 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         return session != null && session.getPermissions().contains("publish_actions");
     }
    
-    
-    //to calculate the outgoingness of a user
-    private float[] calculateOutgoingness() {
-    	
-    	//outgoingness color is yellow
-    	//intensity is defined by the outgoingness of the user
-    	//and calculate from his events
-    	float[] hsv = new float[3];
-    	
-    	//change yellow to HSV value
-    	android.graphics.Color.RGBToHSV(255, 255, 0, hsv);
-    	
-    	//change the value according to the outgoingness
-    	//currently it's hardcoded, but it should depend
-    	//on the value of the events
-    	
-    	float outgoingness = 0.8f;
-    	//calculate outgoingness by events;
-    	hsv[2] = outgoingness;
-    	
-    	return hsv;
-    	
-    	//TODO: WERT an Arduino Ÿbermitteln
-    }
-}
+} //end class
