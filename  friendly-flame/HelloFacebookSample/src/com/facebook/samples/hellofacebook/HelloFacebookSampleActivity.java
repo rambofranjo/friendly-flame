@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -65,6 +66,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private Button showMyEvents;
     private LoginButton loginButton;
     private ProfilePictureView profilePictureView;
+    private ImageView logo;
     private TextView greeting;
     private TextView appTitle;
     private TextView welcome;
@@ -120,6 +122,8 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         greeting = (TextView) findViewById(R.id.greeting);
         appTitle = (TextView) findViewById(R.id.app_title);
         welcome = (TextView) findViewById(R.id.welcome);
+        logo = (ImageView) findViewById(R.id.logo);
+
         
         //BUTTONS
         createEvent = (Button) findViewById(R.id.createEventButton);
@@ -252,6 +256,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         createEvent.setVisibility(View.VISIBLE);
         showFriendsEvents.setVisibility(View.VISIBLE);
         showMyEvents.setVisibility(View.VISIBLE);
+        logo.setVisibility(View.GONE);
         
         //set color of the background according to outgoingness
         flame = new Flame();
@@ -270,6 +275,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         createEvent.setVisibility(View.GONE);
         showFriendsEvents.setVisibility(View.GONE);
         showMyEvents.setVisibility(View.GONE);
+        logo.setVisibility(View.VISIBLE);
         
         //set color of the background according to outgoingness
         flame = new Flame();

@@ -106,6 +106,12 @@
                 android:layout_gravity="center"
                 android:textColor="#333"
                 android:textSize="22sp"/>
+            <ImageView 
+				   android:id="@+id/logo"
+				   android:src="@drawable/flame"
+				   android:layout_width="wrap_content"
+				   android:layout_height="wrap_content"
+				   />
         </LinearLayout>
     </LinearLayout>
     <FrameLayout
