@@ -66,6 +66,8 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private LoginButton loginButton;
     private ProfilePictureView profilePictureView;
     private TextView greeting;
+    private TextView appTitle;
+    private TextView welcome;
     private PendingAction pendingAction = PendingAction.NONE;
     private ViewGroup controlsContainer;
     private GraphUser user;
@@ -116,25 +118,18 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         //PROFILE PICTURE
         profilePictureView = (ProfilePictureView) findViewById(R.id.profilePicture);
         greeting = (TextView) findViewById(R.id.greeting);
-
-        //BUTTONS
+        appTitle = (TextView) findViewById(R.id.app_title);
+        welcome = (TextView) findViewById(R.id.welcome);
         
+        //BUTTONS
         createEvent = (Button) findViewById(R.id.createEventButton);
         createEvent.setOnClickListener(this);
-        
         showFriendsEvents = (Button) findViewById(R.id.showFriendsEventsButton);
         showFriendsEvents.setOnClickListener(this);
-
-        
         showMyEvents = (Button) findViewById(R.id.showMyEventsButton);
         showMyEvents.setOnClickListener(this);
         
-        
-       
-        controlsContainer = (ViewGroup) findViewById(R.id.main_ui_container);
-
-
-       
+        controlsContainer = (ViewGroup) findViewById(R.id.main_ui_container);  
     }
     
     @Override
@@ -143,11 +138,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 		case R.id.createEventButton:
 			case R.id.showFriendsEventsButton:
 			case R.id.showMyEventsButton:
-		
 		}
-
-		
-		
 	}
 
     @Override
@@ -209,34 +200,12 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         showMyEvents.setEnabled(enableButtons);
 
 
+        //show or hide content, depending on login-status
         if (enableButtons && user != null) {
-        	
-        	//make profile picture and buttons visible and enabled
-            profilePictureView.setProfileId(user.getId());
-            profilePictureView.setVisibility(View.VISIBLE);
-            greeting.setText(getString(R.string.hello_user, user.getFirstName()));
-            createEvent.setVisibility(View.VISIBLE);
-            showFriendsEvents.setVisibility(View.VISIBLE);
-            showMyEvents.setVisibility(View.VISIBLE);
-            
-            //set color of the background according to outgoingness
-            flame = new Flame();
-            layoutView= findViewById(R.id.main_ui_container); 
-            layoutView.setBackgroundColor(Color.HSVToColor(flame.calculateOutgoingness()));
+        	showContentLoggedIn();
             
         } else {
-        	//hide profile picture and buttons
-        	profilePictureView.setVisibility(View.GONE);
-            profilePictureView.setProfileId(null);
-            greeting.setText(null);
-            createEvent.setVisibility(View.GONE);
-            showFriendsEvents.setVisibility(View.GONE);
-            showMyEvents.setVisibility(View.GONE);
-            
-            //set color of the background according to outgoingness
-            flame = new Flame();
-            layoutView= findViewById(R.id.main_ui_container); 
-            layoutView.setBackgroundColor(Color.WHITE);
+        	hideContentLoggedOut();
         }
     }
 
@@ -270,6 +239,42 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private boolean hasPublishPermission() {
         Session session = Session.getActiveSession();
         return session != null && session.getPermissions().contains("publish_actions");
+    }
+    
+    //show content if logged in
+    private void showContentLoggedIn() {
+    	//make profile picture and buttons visible and enabled
+        profilePictureView.setProfileId(user.getId());
+        profilePictureView.setVisibility(View.VISIBLE);
+        greeting.setText(getString(R.string.hello_user, user.getFirstName()));
+        welcome.setText(null);
+        appTitle.setText(getString(R.string.app_name));
+        createEvent.setVisibility(View.VISIBLE);
+        showFriendsEvents.setVisibility(View.VISIBLE);
+        showMyEvents.setVisibility(View.VISIBLE);
+        
+        //set color of the background according to outgoingness
+        flame = new Flame();
+        layoutView= findViewById(R.id.main_ui_container); 
+        layoutView.setBackgroundColor(Color.HSVToColor(flame.calculateOutgoingness()));
+    }
+    
+    //hide content if user is not logged in
+    private void hideContentLoggedOut() {
+    	//hide profile picture and buttons
+    	profilePictureView.setVisibility(View.GONE);
+        profilePictureView.setProfileId(null);
+        greeting.setText(null);
+        appTitle.setText(null);
+        welcome.setText("Welcome To Friendly Flame Please log in");
+        createEvent.setVisibility(View.GONE);
+        showFriendsEvents.setVisibility(View.GONE);
+        showMyEvents.setVisibility(View.GONE);
+        
+        //set color of the background according to outgoingness
+        flame = new Flame();
+        layoutView= findViewById(R.id.main_ui_container); 
+        layoutView.setBackgroundColor(Color.WHITE);
     }
    
 } //end class
