@@ -18,31 +18,25 @@ package com.facebook.samples.hellofacebook;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.text.Layout;
-import android.text.TextUtils;
+import android.os.Handler;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import android.content.Intent;
-
-
 import com.facebook.*;
+import com.facebook.android.AsyncFacebookRunner;
+import com.facebook.android.Facebook;
+import com.facebook.samples.hellofacebook.Utility;
 import com.facebook.model.GraphObject;
-import com.facebook.model.GraphPlace;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.*;
 
@@ -51,13 +45,7 @@ import java.util.*;
 
 public class HelloFacebookSampleActivity extends Activity implements OnClickListener {
 
-    private static final List<String> PERMISSIONS = Arrays.asList("publish_actions");
-    private static final Location SEATTLE_LOCATION = new Location("") {
-        {
-            setLatitude(47.6097);
-            setLongitude(-122.3331);
-        }
-    };
+
 
     private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
 
@@ -75,6 +63,15 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private GraphUser user;
     private View layoutView;
     private Flame flame;
+    
+    private Handler mHandler;
+    
+    final static int AUTHORIZE_ACTIVITY_RESULT_CODE = 0;
+    
+    String[] permissions = { "offline_access", "publish_stream", "user_photos", "publish_checkins",
+    "photo_upload" };
+
+
 
     private enum PendingAction {
         NONE,
@@ -103,9 +100,18 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         }
 
         setContentView(R.layout.main);
+        mHandler = new Handler();
+
+        
+        // Create the Facebook Object using the app id.
+        Utility.mFacebook = new Facebook("101522410025545");
+        // Instantiate the asynrunner object for asynchronous api calls. 
+        Utility.mAsyncRunner = new AsyncFacebookRunner(Utility.mFacebook);
+        
 
         //LOGIN BUTTON
         loginButton = (LoginButton) findViewById(R.id.login_button);
+        
         loginButton.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
             @Override
             public void onUserInfoFetched(GraphUser user) {
@@ -128,8 +134,10 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         //BUTTONS
         createEvent = (Button) findViewById(R.id.createEventButton);
         createEvent.setOnClickListener(this);
+        
         showFriendsEvents = (Button) findViewById(R.id.showFriendsEventsButton);
         showFriendsEvents.setOnClickListener(this);
+        
         showMyEvents = (Button) findViewById(R.id.showMyEventsButton);
         showMyEvents.setOnClickListener(this);
         
@@ -139,9 +147,15 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     @Override
 	public void onClick(View arg0) {
 		switch (arg0.getId()) {
+		
 		case R.id.createEventButton:
-			case R.id.showFriendsEventsButton:
-			case R.id.showMyEventsButton:
+		
+		case R.id.showFriendsEventsButton:
+			Intent showFrindsEvents = new Intent(this, GetEventsActivity.class);
+	    	startActivity(showFrindsEvents);
+			break;
+		
+		case R.id.showMyEventsButton:
 		}
 	}
 
@@ -228,22 +242,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         }
     }
 
-    private interface GraphObjectWithId extends GraphObject {
-        String getId();
-    }
-
-    private void showAlert(String title, String message) {
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(R.string.ok, null)
-                .show();
-    }
-
-    private boolean hasPublishPermission() {
-        Session session = Session.getActiveSession();
-        return session != null && session.getPermissions().contains("publish_actions");
-    }
+   
     
     //show content if logged in
     private void showContentLoggedIn() {
