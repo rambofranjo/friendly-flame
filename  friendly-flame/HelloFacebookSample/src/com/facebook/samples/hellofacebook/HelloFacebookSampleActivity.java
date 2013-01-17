@@ -18,12 +18,17 @@ package com.facebook.samples.hellofacebook;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ParcelFileDescriptor;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
@@ -32,6 +37,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.future.usb.UsbAccessory;
+import com.android.future.usb.UsbManager;
 import com.facebook.*;
 import com.facebook.android.AsyncFacebookRunner;
 import com.facebook.android.Facebook;
@@ -40,6 +47,10 @@ import com.facebook.model.GraphObject;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.*;
 
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.*;
 
 
@@ -48,6 +59,10 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 
 
     private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
+
+    // TAG is used to debug in Android logcat console
+ 	private static final String TAG = "ArduinoAccessory";
+	private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
 
     private Button createEvent;
     private Button showFriendsEvents;
@@ -65,12 +80,21 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private Flame flame;
     
     private Handler mHandler;
+    private UsbManager mUsbManager;
+	private PendingIntent mPermissionIntent;
+	private boolean mPermissionRequestPending;
+	byte[] buffer;
     
     final static int AUTHORIZE_ACTIVITY_RESULT_CODE = 0;
     
     String[] permissions = { "offline_access", "publish_stream", "user_photos", "publish_checkins",
     "photo_upload" };
-
+    
+    UsbAccessory mAccessory;
+	ParcelFileDescriptor mFileDescriptor;
+	FileInputStream mInputStream;
+	FileOutputStream mOutputStream;
+	
 
 
     private enum PendingAction {
@@ -86,6 +110,31 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
             onSessionStateChange(session, state, exception);
         }
     };
+    
+    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if (ACTION_USB_PERMISSION.equals(action)) {
+				synchronized (this) {
+					UsbAccessory accessory = UsbManager.getAccessory(intent);
+					if (intent.getBooleanExtra(
+							UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+						openAccessory(accessory);
+					} else {
+						Log.d(TAG, "permission denied for accessory "
+								+ accessory);
+					}
+					mPermissionRequestPending = false;
+				}
+			} else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
+				UsbAccessory accessory = UsbManager.getAccessory(intent);
+				if (accessory != null && accessory.equals(mAccessory)) {
+					closeAccessory();
+				}
+			}
+		}
+	};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -98,8 +147,20 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
             String name = savedInstanceState.getString(PENDING_ACTION_BUNDLE_KEY);
             pendingAction = PendingAction.valueOf(name);
         }
+        
+        mUsbManager = UsbManager.getInstance(this);
+		mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+		IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+		filter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
+		registerReceiver(mUsbReceiver, filter);
+ 
+		if (getLastNonConfigurationInstance() != null) {
+			mAccessory = (UsbAccessory) getLastNonConfigurationInstance();
+			openAccessory(mAccessory);
+		}
 
         setContentView(R.layout.main);
+        //jetzt dann hier irgendwie die Verbindung machen zum Login Button
         mHandler = new Handler();
 
         
@@ -149,6 +210,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 		switch (arg0.getId()) {
 		
 		case R.id.createEventButton:
+			break;
 		
 		case R.id.showFriendsEventsButton:
 			Intent showFrindsEvents = new Intent(this, GetEventsActivity.class);
@@ -156,6 +218,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 			break;
 		
 		case R.id.showMyEventsButton:
+			break;
 		}
 	}
 
@@ -163,8 +226,27 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     protected void onResume() {
         super.onResume();
         uiHelper.onResume();
-
         updateUI();
+        if (mInputStream != null && mOutputStream != null) {
+			return;
+		}
+ 
+		UsbAccessory[] accessories = mUsbManager.getAccessoryList();
+		UsbAccessory accessory = (accessories == null ? null : accessories[0]);
+		if (accessory != null) {
+			if (mUsbManager.hasPermission(accessory)) {
+				openAccessory(accessory);
+			} else {
+				synchronized (mUsbReceiver) {
+					if (!mPermissionRequestPending) {
+						mUsbManager.requestPermission(accessory,mPermissionIntent);
+						mPermissionRequestPending = true;
+					}
+				}
+			}
+		} else {
+			Log.d(TAG, "mAccessory is null");
+		}
     }
 
     @Override
@@ -185,13 +267,40 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     public void onPause() {
         super.onPause();
         uiHelper.onPause();
+        closeAccessory();
     }
 
     @Override
     public void onDestroy() {
+    	unregisterReceiver(mUsbReceiver);
         super.onDestroy();
         uiHelper.onDestroy();
     }
+    
+    private void openAccessory(UsbAccessory accessory) {
+		mFileDescriptor = mUsbManager.openAccessory(accessory);
+		if (mFileDescriptor != null) {
+			mAccessory = accessory;
+			FileDescriptor fd = mFileDescriptor.getFileDescriptor();
+			mInputStream = new FileInputStream(fd);
+			mOutputStream = new FileOutputStream(fd);
+			Log.d(TAG, "accessory opened");
+		} else {
+			Log.d(TAG, "accessory open fail");
+		}
+	}
+    
+    private void closeAccessory() {
+		try {
+			if (mFileDescriptor != null) {
+				mFileDescriptor.close();
+			}
+		} catch (IOException e) {
+		} finally {
+			mFileDescriptor = null;
+			mAccessory = null;
+		}
+	}
 
     private void onSessionStateChange(Session session, SessionState state, Exception exception) {
         if (pendingAction != PendingAction.NONE &&
@@ -212,6 +321,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private void updateUI() {
         Session session = Session.getActiveSession();
         boolean enableButtons = (session != null && session.isOpened());
+        buffer = new byte[1];
 
         createEvent.setEnabled(enableButtons);
         showFriendsEvents.setEnabled(enableButtons);
@@ -221,11 +331,25 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         //show or hide content, depending on login-status
         if (enableButtons && user != null) {
         	showContentLoggedIn();
+        	buffer[0]=(byte)1;
+        	bufferWrite(buffer);
             
         } else {
         	hideContentLoggedOut();
+        	buffer[0]=(byte)0;
+        	bufferWrite(buffer);
         }
     }
+    
+    @Override
+	public Object onRetainNonConfigurationInstance() {
+		if (mAccessory != null) {
+			return mAccessory;
+		} else {
+			return super.onRetainNonConfigurationInstance();
+		}
+	}
+ 
 
     @SuppressWarnings("incomplete-switch")
     private void handlePendingAction() {
@@ -261,6 +385,8 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         flame = new Flame();
         layoutView= findViewById(R.id.main_ui_container); 
         layoutView.setBackgroundColor(Color.HSVToColor(flame.calculateOutgoingness()));
+
+        
     }
     
     //hide content if user is not logged in
@@ -280,6 +406,18 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         flame = new Flame();
         layoutView= findViewById(R.id.main_ui_container); 
         layoutView.setBackgroundColor(Color.WHITE);
+        
+        
+    }
+    
+    private void bufferWrite(byte[] buffer) {
+    	if (mOutputStream != null) {
+			try {
+				mOutputStream.write(buffer);
+			} catch (IOException e) {
+				Log.e(TAG, "write failed", e);
+			}
+		}
     }
    
 } //end class
