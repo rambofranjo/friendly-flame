@@ -23,6 +23,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -33,6 +34,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -84,11 +86,20 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 	private PendingIntent mPermissionIntent;
 	private boolean mPermissionRequestPending;
 	byte[] buffer;
+	
+	private BaseAdapter userPermissionsAdapter;
     
     final static int AUTHORIZE_ACTIVITY_RESULT_CODE = 0;
     
     String[] permissions = { "offline_access", "publish_stream", "user_photos", "publish_checkins",
     "photo_upload" };
+    
+    String[] user_permissions = { "user_about_me", "user_activities", "user_birthday",
+            "user_checkins", "user_education_history", "user_events", "user_groups",
+            "user_hometown", "user_interests", "user_likes", "user_location", "user_notes",
+            "user_online_presence", "user_photos", "user_photo_video_tags", "user_relationships",
+            "user_relationship_details", "user_religion_politics", "user_status", "user_videos",
+            "user_website", "user_work_history"};
     
     UsbAccessory mAccessory;
 	ParcelFileDescriptor mFileDescriptor;
@@ -139,6 +150,36 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        
+        SharedPreferences mPrefs = getPreferences(MODE_PRIVATE);
+        String access_token = mPrefs.getString("access_token", null);
+        
+        Session session = Session.getActiveSession();
+        
+        if (session == null) {      
+            // Check if there is an existing token to be migrated 
+            if(access_token != null) {                              
+                // Clear the token info
+                SharedPreferences.Editor editor = mPrefs.edit();
+                editor.putString("access_token", null);
+                editor.commit();    
+                // Create an AccessToken object for importing
+                // just pass in the access token and take the
+                // defaults on other values
+                AccessToken accessToken = AccessToken.createFromExistingAccessToken(
+                                            access_token,
+                                            null, null, null, null);
+                // statusCallback: Session.StatusCallback implementation
+                session.open(accessToken, callback);
+                Session.setActiveSession(session);
+            }
+        }
+        
+        
+        
+        
+        
         uiHelper = new UiLifecycleHelper(this, callback);
         uiHelper.onCreate(savedInstanceState);
         
@@ -160,6 +201,10 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 		}
 
         setContentView(R.layout.main);
+        
+        
+        //userPermissionsAdapter = new PermissionsListAdapter(user_permissions);
+        
         //jetzt dann hier irgendwie die Verbindung machen zum Login Button
         mHandler = new Handler();
 
@@ -172,6 +217,13 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 
         //LOGIN BUTTON
         loginButton = (LoginButton) findViewById(R.id.login_button);
+        List<String> permissionslist = new ArrayList<String>();
+        permissionslist = Arrays.asList(user_permissions);
+        loginButton.clearPermissions();
+        loginButton.setReadPermissions(permissionslist);
+        
+        
+        //loginButton.setApplicationId("101522410025545");
         
         loginButton.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
             @Override

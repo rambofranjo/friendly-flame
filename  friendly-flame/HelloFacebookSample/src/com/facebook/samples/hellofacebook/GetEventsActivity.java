@@ -9,6 +9,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.facebook.Session;
+import com.facebook.android.Facebook;
 import com.facebook.samples.hellofacebook.BaseRequestListener;
 
 
@@ -18,7 +20,7 @@ public class GetEventsActivity extends Activity {
     private Handler mHandler;
     private TextView mFQLOutput;
 
-	
+	Facebook facebookManager;
 	
     public void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
@@ -31,6 +33,7 @@ public class GetEventsActivity extends Activity {
         String query = "SELECT eid, name, start_time, end_time, location, venue, host, description FROM event WHERE eid IN ( SELECT eid FROM event_member WHERE uid = me() )";
       
         Bundle params = new Bundle();
+        params.putString("access_token", Session.getActiveSession().getAccessToken());
         params.putString("method", "fql.query");
         params.putString("query", query);
         Utility.mAsyncRunner.request(null, params, new FQLRequestListener());
