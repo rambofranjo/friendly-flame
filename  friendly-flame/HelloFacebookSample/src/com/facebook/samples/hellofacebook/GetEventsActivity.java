@@ -3,6 +3,7 @@ package com.facebook.samples.hellofacebook;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import org.json.JSONArray;
@@ -32,7 +33,12 @@ public class GetEventsActivity extends Activity {
         // alle events wo ich involviert bin
         //String query = "SELECT eid, all_members_count, attending_count, declined_count, name, start_time, end_time, location, venue, host, description FROM event WHERE eid IN ( SELECT eid FROM event_member WHERE uid = me() )";
         
-        String query = "SELECT name, venue, location, start_time FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0 AND rsvp_status="+"\"attending\""+")";
+        String query_attending = "SELECT name, venue, location, start_time FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0 AND rsvp_status="+"\"attending\""+")";
+        String query_declined = "SELECT '' FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0 AND rsvp_status="+"\"declined\""+")";
+        String query_notreplied = "SELECT name, venue, location, start_time FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0 AND rsvp_status="+"\"not_replied\""+")";
+        String query_countAllEvents = "SELECT name, venue, location, start_time FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
+        
+        String query = query_declined;
         
         // jeden eventstatus von eingeloggten user 
         //String query = "SELECT eid, rsvp_status FROM event_member WHERE uid = me()";
@@ -81,8 +87,20 @@ public class GetEventsActivity extends Activity {
             public void run() {
                 mFQLOutput.setText(txt);
                 mFQLOutput.setVisibility(View.VISIBLE);
+                
+                int count = countEvents(txt);
+                System.out.println("count: " + count);
+                Log.d("count", "dasfaf " +count);
+                
             }
         });
+    }
+    
+    public int countEvents(String query) {
+    	StringBuffer strb = new StringBuffer(query);
+    	int count = strb.lastIndexOf("anon");
+    	
+    	return count;
     }
     
   }
