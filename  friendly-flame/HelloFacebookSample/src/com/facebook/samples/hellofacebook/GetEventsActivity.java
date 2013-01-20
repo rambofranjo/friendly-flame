@@ -30,8 +30,13 @@ public class GetEventsActivity extends Activity {
         mFQLOutput = (TextView) findViewById(R.id.fqlOutput);
 
         // alle events wo ich involviert bin
-        String query = "SELECT eid, name, start_time, end_time, location, venue, host, description FROM event WHERE eid IN ( SELECT eid FROM event_member WHERE uid = me() )";
-      
+        //String query = "SELECT eid, all_members_count, attending_count, declined_count, name, start_time, end_time, location, venue, host, description FROM event WHERE eid IN ( SELECT eid FROM event_member WHERE uid = me() )";
+        
+        String query = "SELECT name, venue, location, start_time FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0 AND rsvp_status="+"\"attending\""+")";
+        
+        // jeden eventstatus von eingeloggten user 
+        //String query = "SELECT eid, rsvp_status FROM event_member WHERE uid = me()";
+        
         Bundle params = new Bundle();
         params.putString("access_token", Session.getActiveSession().getAccessToken());
         params.putString("method", "fql.query");
