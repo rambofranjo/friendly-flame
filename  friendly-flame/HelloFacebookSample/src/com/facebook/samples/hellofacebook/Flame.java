@@ -33,10 +33,19 @@ public class Flame {
     	
     	//change yellow to HSV value
     	android.graphics.Color.RGBToHSV(255, 255, 0, hsv);
+    	    	
+    	int attended = 0;
+    	int declined = 0;
+    	int not_replied = 0;
+    	int maybe = 0;
+    	int all_events = 0;
     	
-    	//change the value according to the outgoingness
-    	//currently it's hardcoded, but it should depend
-    	//on the value of the events
+    	//calculate outgoingness of user
+    	//formula:
+    	// ((attended events - declined events - not replied/2)/all events * 2) + 0.5
+    	//this formula also takes not replied events into accounts and
+    	//give them a little penality
+    	float outgoingness = ((attended - declined - (not_replied/2)) / all_events * 2) + 0.5f;
     	
     	//float outgoingness = 0.8f;
     	//calculate outgoingness by events;
