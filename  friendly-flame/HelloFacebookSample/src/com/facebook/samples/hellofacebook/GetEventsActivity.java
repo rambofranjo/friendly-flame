@@ -7,12 +7,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.facebook.HttpMethod;
+import com.facebook.Request;
+import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.android.Facebook;
-import com.facebook.samples.hellofacebook.BaseRequestListener;
+import com.facebook.model.GraphObject;
 
 
 @SuppressWarnings("deprecation")
@@ -20,6 +22,16 @@ public class GetEventsActivity extends Activity {
 	
     private Handler mHandler;
     private TextView mFQLOutput;
+    String events_name = "";
+    private int user_attending = 0;
+    private int user_declined = 0;
+    private int user_not_replied = 0;
+    private int all_events = 0;	
+    private int all_members_count = 0;
+    private int all_attending_count = 0;
+    private int all_declined_count = 0;
+    private int all_not_replied_count = 0;
+    
 
 	Facebook facebookManager;
 	
@@ -30,81 +42,120 @@ public class GetEventsActivity extends Activity {
         setContentView(R.layout.geteventsactivity);
         mFQLOutput = (TextView) findViewById(R.id.fqlOutput);
 
-        // alle events wo ich involviert bin
-        //String query = "SELECT eid, all_members_count, attending_count, declined_count, name, start_time, end_time, location, venue, host, description FROM event WHERE eid IN ( SELECT eid FROM event_member WHERE uid = me() )";
+   
+        //TODO filter all events where I am the creator? or with JSON Object?
         
-        String query_attending = "SELECT '' FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0 AND rsvp_status="+"\"attending\""+")";
-        String query_declined = "SELECT '' FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0 AND rsvp_status="+"\"declined\""+")";
-        String query_notreplied = "SELECT '' FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0 AND rsvp_status="+"\"not_replied\""+")";
-        String query_countAllEvents = "SELECT '' FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
-        
-        String query = query_attending;
+        // String query_allEvents2 = "SELECT name, creator FROM event WHERE eid IN (SELECT eid, rsvp_status FROM event_member WHERE uid = me() and start_time > 0)";
+        String query_allEvents = "SELECT name, creator FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
+        System.out.println("QUERY :" + query_allEvents);
+        String query = query_allEvents;
         
         // jeden eventstatus von eingeloggten user 
         //String query = "SELECT eid, rsvp_status FROM event_member WHERE uid = me()";
         
+        //send FQL request and retrieve informations from JSON object
         Bundle params = new Bundle();
-        params.putString("access_token", Session.getActiveSession().getAccessToken());
-        params.putString("method", "fql.query");
-        params.putString("query", query);
-        Utility.mAsyncRunner.request(null, params, new FQLRequestListener());
-        
+        params.putString("q", query);
+        Session session = Session.getActiveSession();
+        Request request = new Request(session,
+            "/fql",                         
+            params,                         
+            HttpMethod.GET,                 
+            new Request.Callback(){         
+                public void onCompleted(Response response) {
+                    Log.i("TAG", "Result: " + response.toString());
+                    parseUserFromFQLResponse(response);
+                }                  
+        }); 
+        Request.executeBatchAsync(request);
     }
     
-    public class FQLRequestListener extends BaseRequestListener {
+    //getters for all the informations retrieved through FQL query,
+    //will be needed for the flame class to calculate outgoingness
+    public int getUser_attending() {
+		return user_attending;
+	}
 
-        @Override
-        public void onComplete(final String response, final Object state) {
-            /*
-             * Output can be a JSONArray or a JSONObject.
-             * Try JSONArray and if there's a JSONException, parse to JSONObject
-             */
-            try {
-                JSONArray json = new JSONArray(response);
-                setText(json.toString(2));
-            } catch (JSONException e) {
-                try {
-                    /*
-                     * JSONObject probably indicates there was some error
-                     * Display that error, but for end user you should parse the
-                     * error and show appropriate message
-                     */
-                    JSONObject json = new JSONObject(response);
-                    setText(json.toString(2));
-                } catch (JSONException e1) {
-                    System.out.println(e1.getMessage());
-                }
-            }
-        }
-    
-    
-    
-    
-    
+	public int getUser_declined() {
+		return user_declined;
+	}
+
+	public int getUser_not_replied() {
+		return user_not_replied;
+	}
+
+	public int getAll_events() {
+		return all_events;
+	}
+
+	public int getAll_members_count() {
+		return all_members_count;
+	}
+
+	public int getAll_attending_count() {
+		return all_attending_count;
+	}
+
+	public int getAll_declined_count() {
+		return all_declined_count;
+	}
+	public int getAll_not_replied_count() {
+		return all_not_replied_count;
+	}
+
+	//method to filter needed informations from JSON Object
+    protected void parseUserFromFQLResponse(Response response) {
+		try {
+			//this will deliver all events where a user took some part in it,
+			//attending, declined, not_replied or maybe
+			GraphObject go = response.getGraphObject();
+			JSONObject jso = go.getInnerJSONObject();
+			JSONArray arr = jso.getJSONArray("data");
+			
+			//get all events by the length of the data array
+			all_events = arr.length();
+			System.out.println("All Events: " + all_events);
+			
+			for (int i = 0; i < arr.length(); i++) {
+				
+				JSONObject json_obj = arr.getJSONObject(i);
+				
+				//get the number of all attended, declined or not_replied events
+				//currently not working, guess we need a multiquery here
+				
+				/*String rsvp_status = json_obj.getString("rsvp_status");
+				if (rsvp_status.equals("attending")) {
+					user_attending++;
+				} else if (rsvp_status.equals("declined")) {
+					user_declined++;
+				} else if (rsvp_status.equals("not_replied")) {
+					user_not_replied++;
+				} else {
+				} */
+				
+				//string for testing, doesn't do anything currently as there is no way right not to access rsvp_events
+		        //so it does set all values currently to zero except all events
+		        String result = "all events: " + all_events + ", attended: " + user_attending + ", declined: " + user_declined + ", not_replied: " + user_not_replied;
+		        setText(result);
+
+			}
+			
+		} catch(Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
+	//Method to set the view of the screen, maybe we
+    //should change it to view?
     public void setText(final String txt) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mFQLOutput.setText(txt);
-                mFQLOutput.setVisibility(View.VISIBLE);
-                
-                int count = countEvents(txt);
-                System.out.println("count: " + count);
-                Log.d("count", "dasfaf " +count);
-                
-            }
-        });
-    }
-    
-    public int countEvents(String query) {
-    	
-    	String[] splitquery = query.split(":");
-    	int count = splitquery.length;
-    	
-    	return count-1;
-    }
-    
-  }
+    	mHandler.post(new Runnable() {
 
+			@Override
+			public void run() {
+				mFQLOutput.setText(txt);
+				mFQLOutput.setVisibility(View.VISIBLE);
+			}	
+    	});
+    }
     	
-}
+} //end of class
