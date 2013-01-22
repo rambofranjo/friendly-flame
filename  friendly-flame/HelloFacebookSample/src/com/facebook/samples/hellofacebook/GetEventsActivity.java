@@ -46,9 +46,14 @@ public class GetEventsActivity extends Activity {
         //TODO filter all events where I am the creator? or with JSON Object?
         
         // String query_allEvents2 = "SELECT name, creator FROM event WHERE eid IN (SELECT eid, rsvp_status FROM event_member WHERE uid = me() and start_time > 0)";
-        String query_allEvents = "SELECT name, creator FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
-        System.out.println("QUERY :" + query_allEvents);
-        String query = query_allEvents;
+        
+        // all events of the user who created and get invited to events
+        ///String query_allEvents = "SELECT name, creator FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)"; 
+        
+        String query_myFriendsEvents = "SELECT eid, rsvp_status FROM event_member WHERE uid = me() and start_time > 0"; // events where I got invited AND I'm not the creator
+        
+        System.out.println("QUERY :" + query_myFriendsEvents);
+        String query = query_myFriendsEvents;
         
         // jeden eventstatus von eingeloggten user 
         //String query = "SELECT eid, rsvp_status FROM event_member WHERE uid = me()";
@@ -120,10 +125,12 @@ public class GetEventsActivity extends Activity {
 				
 				JSONObject json_obj = arr.getJSONObject(i);
 				
+				
+				
 				//get the number of all attended, declined or not_replied events
 				//currently not working, guess we need a multiquery here
 				
-				/*String rsvp_status = json_obj.getString("rsvp_status");
+				String rsvp_status = json_obj.getString("rsvp_status");
 				if (rsvp_status.equals("attending")) {
 					user_attending++;
 				} else if (rsvp_status.equals("declined")) {
@@ -131,9 +138,9 @@ public class GetEventsActivity extends Activity {
 				} else if (rsvp_status.equals("not_replied")) {
 					user_not_replied++;
 				} else {
-				} */
+				} 
 				
-				//string for testing, doesn't do anything currently as there is no way right not to access rsvp_events
+				//string for testing, doesn't do anything currently as there is no way right now to access rsvp_events
 		        //so it does set all values currently to zero except all events
 		        String result = "all events: " + all_events + ", attended: " + user_attending + ", declined: " + user_declined + ", not_replied: " + user_not_replied;
 		        setText(result);
