@@ -38,6 +38,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.android.future.usb.UsbAccessory;
 import com.android.future.usb.UsbManager;
@@ -70,6 +71,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private Button showFriendsEvents;
     private Button showMyEvents;
     private LoginButton loginButton;
+    private ToggleButton lightButton;
     private ProfilePictureView profilePictureView;
     private ImageView logo;
     private TextView greeting;
@@ -85,7 +87,6 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private UsbManager mUsbManager;
 	private PendingIntent mPermissionIntent;
 	private boolean mPermissionRequestPending;
-	byte[] buffer;
 	
 	private BaseAdapter userPermissionsAdapter;
     
@@ -254,6 +255,9 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         showMyEvents = (Button) findViewById(R.id.showMyEventsButton);
         showMyEvents.setOnClickListener(this);
         
+        lightButton = (ToggleButton) findViewById(R.id.toggleButtonLED);
+        lightButton.setOnClickListener(this);
+        
         controlsContainer = (ViewGroup) findViewById(R.id.main_ui_container);  
     }
     
@@ -270,6 +274,19 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 			break;
 		
 		case R.id.showMyEventsButton:
+			break;
+			
+		case R.id.toggleButtonLED:
+			
+			byte[] buffer = new byte[1];
+			 
+			if(lightButton.isChecked()){
+				buffer[0]=(byte)0; // button says on, light is off
+				bufferWrite(buffer);
+			}else{
+				buffer[0]=(byte)1; // button says off, light is on
+				bufferWrite(buffer);
+			}
 			break;
 		}
 	}
@@ -373,7 +390,6 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private void updateUI() {
         Session session = Session.getActiveSession();
         boolean enableButtons = (session != null && session.isOpened());
-        buffer = new byte[1];
 
         createEvent.setEnabled(enableButtons);
         showFriendsEvents.setEnabled(enableButtons);
@@ -383,13 +399,11 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         //show or hide content, depending on login-status
         if (enableButtons && user != null) {
         	showContentLoggedIn();
-        	buffer[0]=(byte)1;
-        	bufferWrite(buffer);
+        	
             
         } else {
         	hideContentLoggedOut();
-        	buffer[0]=(byte)0;
-        	bufferWrite(buffer);
+        	
         }
     }
     
@@ -472,4 +486,5 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 		}
     }
    
+
 } //end class
