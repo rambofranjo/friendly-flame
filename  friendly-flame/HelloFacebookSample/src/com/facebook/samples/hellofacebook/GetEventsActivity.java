@@ -48,12 +48,23 @@ public class GetEventsActivity extends Activity {
         // String query_allEvents2 = "SELECT name, creator FROM event WHERE eid IN (SELECT eid, rsvp_status FROM event_member WHERE uid = me() and start_time > 0)";
         
         // all events of the user who created and get invited to events
-        ///String query_allEvents = "SELECT name, creator FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)"; 
+        //String query_allEvents = "SELECT eid, name, creator FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)"; 
         
-        String query_myFriendsEvents = "SELECT eid, rsvp_status FROM event_member WHERE uid = me() and start_time > 0"; // events where I got invited AND I'm not the creator
+        // events where logged in user = creator
+        //String query_allEvents = "SELECT eid, name, creator FROM event WHERE creator = me() AND eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
         
-        System.out.println("QUERY :" + query_myFriendsEvents);
-        String query = query_myFriendsEvents;
+        // events where I got invited AND I'm not the creator  --> fkt noch noch nicht, inviter == null, anscheinend privacy problem
+        // get rsvp_status, also events where I'm creator 
+        //String query_myFriendsEvents = "SELECT eid, inviter, uid, rsvp_status FROM event_member WHERE uid = me() and start_time > 0"; 
+
+        
+        // find uid from users who are invited to the event
+        String query_invitedUser = "SELECT uid, eid FROM event_member WHERE eid = \"515985715108944\"";
+        
+        
+        
+        System.out.println("QUERY :" + query_invitedUser);
+        String query = query_invitedUser;
         
         // jeden eventstatus von eingeloggten user 
         //String query = "SELECT eid, rsvp_status FROM event_member WHERE uid = me()";

@@ -16,6 +16,7 @@
 
 package com.facebook.samples.hellofacebook;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -30,6 +31,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
@@ -38,6 +42,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.android.future.usb.UsbAccessory;
@@ -55,6 +60,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+
 
 
 public class HelloFacebookSampleActivity extends Activity implements OnClickListener {
@@ -147,6 +153,8 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 			}
 		}
 	};
+	
+	
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -157,6 +165,9 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         String access_token = mPrefs.getString("access_token", null);
         
         Session session = Session.getActiveSession();
+        
+        
+
         
         if (session == null) {      
             // Check if there is an existing token to be migrated 
@@ -203,7 +214,6 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 
         setContentView(R.layout.main);
         
-        
         //userPermissionsAdapter = new PermissionsListAdapter(user_permissions);
         
         //jetzt dann hier irgendwie die Verbindung machen zum Login Button
@@ -230,10 +240,13 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
             @Override
             public void onUserInfoFetched(GraphUser user) {
                 HelloFacebookSampleActivity.this.user = user;
-                updateUI();
+                //updateUI();
+                
+                changeToEventActivity();
+                
                 // It's possible that we were waiting for this.user to be populated in order to post a
                 // status update.
-                handlePendingAction();
+                //handlePendingAction();
             }
         });
 
@@ -295,7 +308,8 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     protected void onResume() {
         super.onResume();
         uiHelper.onResume();
-        updateUI();
+        //updateUI();
+        changeToEventActivity();
         if (mInputStream != null && mOutputStream != null) {
 			return;
 		}
@@ -382,19 +396,21 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
                     .show();
             pendingAction = PendingAction.NONE;
         } else if (state == SessionState.OPENED_TOKEN_UPDATED) {
-            handlePendingAction();
+            //handlePendingAction();
         }
-        updateUI();
+        //dateUI();
+        changeToEventActivity();
     }
 
     private void updateUI() {
         Session session = Session.getActiveSession();
         boolean enableButtons = (session != null && session.isOpened());
-
+        
+        
         createEvent.setEnabled(enableButtons);
         showFriendsEvents.setEnabled(enableButtons);
         showMyEvents.setEnabled(enableButtons);
-
+        
 
         //show or hide content, depending on login-status
         if (enableButtons && user != null) {
@@ -416,7 +432,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 		}
 	}
  
-
+    /*
     @SuppressWarnings("incomplete-switch")
     private void handlePendingAction() {
         PendingAction previouslyPendingAction = pendingAction;
@@ -431,7 +447,19 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
                 break;
         }
     }
+    
+    */
 
+    
+    private void changeToEventActivity() {
+    	   Session session = Session.getActiveSession();
+           if (session != null && session.isOpened()) {
+        	  Intent eventsActivity = new Intent(this, EventsActivity.class);
+         	  startActivity(eventsActivity); 
+           }
+    	
+    	  
+    }
    
     
     //show content if logged in
@@ -486,5 +514,8 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 		}
     }
    
+    
+    
+    
 
 } //end class
