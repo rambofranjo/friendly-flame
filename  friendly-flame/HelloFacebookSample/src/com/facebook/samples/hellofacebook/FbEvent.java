@@ -1,5 +1,7 @@
 package com.facebook.samples.hellofacebook;
 
+import java.util.ArrayList;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -22,8 +24,7 @@ public class FbEvent {
 	private int all_events = 0;
 	private String[][] userAllEvents; 
     private int userAttributes = 0; 
-    private String[] userAllEventsString; 
-    private String[] userAllEventsResult = {""}; 
+    private ArrayList <String> userAllEventsString = new ArrayList<String>();
     
     public FbEvent() {
     	
@@ -57,8 +58,12 @@ public class FbEvent {
 		return location;
 	}
 	
+	public ArrayList<String> getArray() {
+		return userAllEventsString;
+	}
+	
 	// methods for getting data 
-	public String[] getAllEvents(){
+	public void getAllEvents(){
 		String query_allEvents = "SELECT eid, name, start_time FROM event WHERE eid IN " +
 				"(SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
 		
@@ -75,18 +80,14 @@ public class FbEvent {
             new Request.Callback(){         
                 public void onCompleted(Response response) {
                     Log.i("TAG", "Result: " + response.toString());
-                    userAllEventsResult = parseUserFromFQLResponse(response);
+                    parseUserFromFQLResponse(response);
                 }                  
         }); 
         Request.executeBatchAsync(request);
-		
-		
-		
-		return userAllEventsResult; 
 	}
 	
 	//method to filter needed informations from JSON Object
-    protected String[] parseUserFromFQLResponse(Response response) {
+    protected void parseUserFromFQLResponse(Response response) {
 		try {
 			//this will deliver all events where a user took some part in it,
 			//attending, declined, not_replied or maybe
@@ -100,7 +101,7 @@ public class FbEvent {
 			userAttributes = 3;  	
 			
 			userAllEvents = new String[all_events][userAttributes];
-			userAllEventsString = new String[all_events];
+			
 			
 			System.out.println("All Events: " + all_events);
 			
@@ -120,17 +121,14 @@ public class FbEvent {
 					*/
 					
 					
-					
-					userAllEventsString[i] = userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2];
-					Log.d("userAllEvents", userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2]);
+					userAllEventsString.add(i,userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2]);
+					Log.d("userAllEvents", userAllEventsString.get(i));
 			}
-			
 			
 		} catch(Throwable t) {
 			t.printStackTrace();
 		}
-		return userAllEventsString;
 	}
 	
 	
-}
+} //end of class

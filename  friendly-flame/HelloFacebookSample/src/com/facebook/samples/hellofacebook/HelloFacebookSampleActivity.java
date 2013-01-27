@@ -63,7 +63,7 @@ import java.util.*;
 
 
 
-public class HelloFacebookSampleActivity extends Activity implements OnClickListener {
+public class HelloFacebookSampleActivity extends Activity {
 
 
 
@@ -256,53 +256,10 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         appTitle = (TextView) findViewById(R.id.app_title);
         welcome = (TextView) findViewById(R.id.welcome);
         logo = (ImageView) findViewById(R.id.logo);
-
-        
-        //BUTTONS
-        createEvent = (Button) findViewById(R.id.createEventButton);
-        createEvent.setOnClickListener(this);
-        
-        showFriendsEvents = (Button) findViewById(R.id.showFriendsEventsButton);
-        showFriendsEvents.setOnClickListener(this);
-        
-        showMyEvents = (Button) findViewById(R.id.showMyEventsButton);
-        showMyEvents.setOnClickListener(this);
-        
-        lightButton = (ToggleButton) findViewById(R.id.toggleButtonLED);
-        lightButton.setOnClickListener(this);
-        
-        controlsContainer = (ViewGroup) findViewById(R.id.main_ui_container);  
+  
     }
     
-    @Override
-	public void onClick(View arg0) {
-		switch (arg0.getId()) {
-		
-		case R.id.createEventButton:
-			break;
-		
-		case R.id.showFriendsEventsButton:
-			Intent showFrindsEvents = new Intent(this, GetEventsActivity.class);
-	    	startActivity(showFrindsEvents);
-			break;
-		
-		case R.id.showMyEventsButton:
-			break;
-			
-		case R.id.toggleButtonLED:
-			
-			byte[] buffer = new byte[1];
-			 
-			if(lightButton.isChecked()){
-				buffer[0]=(byte)0; // button says on, light is off
-				bufferWrite(buffer);
-			}else{
-				buffer[0]=(byte)1; // button says off, light is on
-				bufferWrite(buffer);
-			}
-			break;
-		}
-	}
+
 
     @Override
     protected void onResume() {

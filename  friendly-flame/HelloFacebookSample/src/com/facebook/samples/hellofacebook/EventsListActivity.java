@@ -1,8 +1,11 @@
 package com.facebook.samples.hellofacebook;
 
+import java.util.ArrayList;
+
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,7 +19,7 @@ public class EventsListActivity extends ListActivity {
 	FbEvent fbe = new FbEvent();
 	
 	int counter = 0; 
-	String[] contactList;
+	ArrayList<String> contactList;
 	
 	
 	//String[] contactList = {"sadfasf", "asdfasf"};
@@ -28,7 +31,10 @@ public class EventsListActivity extends ListActivity {
         super.onCreate(icicle);
         setContentView(R.layout.main_events);
         
-        contactList = fbe.getAllEvents();
+        contactList = fbe.getArray();
+        for (String al:contactList) {
+        	Log.d("contactListi", al.toString());
+        }
         
         ListAdapter adapter = createAdapter();
         setListAdapter(adapter);
