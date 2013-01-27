@@ -1,21 +1,41 @@
 package com.facebook.samples.hellofacebook;
 
+import java.util.ArrayList;
+
+
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.app.ListActivity;
+import android.content.Intent;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
-public class EventsActivity extends Activity {
+public class EventsActivity extends Activity  {
+	
+	int clickCounter=0;
+    ArrayList<String> listItems=new ArrayList<String>();
+    ArrayAdapter<String> adapter;
+    
+    private Button eventButton = null; 
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_events);
 		
+		
+		  
 	}
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -30,8 +50,11 @@ public class EventsActivity extends Activity {
         switch (item.getItemId()) {
 
             case R.id.all_events:
-            	Toast.makeText(this, "All events", Toast.LENGTH_SHORT).show();
-                break;
+            	//Toast.makeText(this, "All events", Toast.LENGTH_SHORT).show();
+            	startActivity(new Intent(this, EventsListActivity.class));
+
+            	
+            	break;
 
             case R.id.my_events:
                 Toast.makeText(this, "My events", Toast.LENGTH_SHORT).show();
@@ -48,6 +71,7 @@ public class EventsActivity extends Activity {
         }
         return true;
     }
+
 	
 
 }
