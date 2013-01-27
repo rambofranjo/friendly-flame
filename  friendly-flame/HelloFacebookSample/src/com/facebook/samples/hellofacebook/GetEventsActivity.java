@@ -23,6 +23,7 @@ public class GetEventsActivity extends Activity {
     private Handler mHandler;
     private TextView mFQLOutput;
     String events_name = "";
+    
     private int user_attending = 0;
     private int user_declined = 0;
     private int user_not_replied = 0;
@@ -32,6 +33,8 @@ public class GetEventsActivity extends Activity {
     private int all_declined_count = 0;
     private int all_not_replied_count = 0;
     
+    private String[][] userAllEvents = null; 
+    private int userAttributes = 0; 
 
 	Facebook facebookManager;
 	
@@ -48,7 +51,7 @@ public class GetEventsActivity extends Activity {
         // String query_allEvents2 = "SELECT name, creator FROM event WHERE eid IN (SELECT eid, rsvp_status FROM event_member WHERE uid = me() and start_time > 0)";
         
         // all events of the user who created and get invited to events
-        //String query_allEvents = "SELECT eid, name, creator FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)"; 
+        String query_allEvents = "SELECT eid, name, start_time FROM event WHERE eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)"; 
         
         // events where logged in user = creator
         //String query_allEvents = "SELECT eid, name, creator FROM event WHERE creator = me() AND eid IN (SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
@@ -59,12 +62,12 @@ public class GetEventsActivity extends Activity {
 
         
         // find uid from users who are invited to the event
-        String query_invitedUser = "SELECT uid, eid FROM event_member WHERE eid = \"515985715108944\"";
+        //String query_invitedUser = "SELECT uid, eid, name FROM event_member WHERE eid = \"515985715108944\"";
         
         
         
-        System.out.println("QUERY :" + query_invitedUser);
-        String query = query_invitedUser;
+        System.out.println("QUERY :" + query_allEvents);
+        String query = query_allEvents;
         
         // jeden eventstatus von eingeloggten user 
         //String query = "SELECT eid, rsvp_status FROM event_member WHERE uid = me()";
@@ -129,32 +132,30 @@ public class GetEventsActivity extends Activity {
 			JSONArray arr = jso.getJSONArray("data");
 			
 			//get all events by the length of the data array
+			// userAttributes = eventname, date, eid
 			all_events = arr.length();
+			userAttributes = 2;  	
+			userAllEvents = new String[all_events][userAttributes];
+			
+			
+	
+			
+			
 			System.out.println("All Events: " + all_events);
 			
-			for (int i = 0; i < arr.length(); i++) {
+			for (int i = 0; i < all_events; i++) {
 				
-				JSONObject json_obj = arr.getJSONObject(i);
+					JSONObject json_obj = arr.getJSONObject(i);
+					// eid, name, start_time
+					userAllEvents[i][0] = json_obj.getString("eid");
+					userAllEvents[i][1] = json_obj.getString("name");
+					userAllEvents[i][2] = json_obj.getString("start_time");
+					
+					//string for testing, doesn't do anything currently as there is no way right now to access rsvp_events
+			        //so it does set all values currently to zero except all events
+			        //String result = "all events: " + all_events + ", attended: " + user_attending + ", declined: " + user_declined + ", not_replied: " + user_not_replied;
+			        setText("eid: "+userAllEvents[i][0] +" name: "+userAllEvents[i][1]+" start_time: "+userAllEvents[i][2]);
 				
-				
-				
-				//get the number of all attended, declined or not_replied events
-				//currently not working, guess we need a multiquery here
-				
-				String rsvp_status = json_obj.getString("rsvp_status");
-				if (rsvp_status.equals("attending")) {
-					user_attending++;
-				} else if (rsvp_status.equals("declined")) {
-					user_declined++;
-				} else if (rsvp_status.equals("not_replied")) {
-					user_not_replied++;
-				} else {
-				} 
-				
-				//string for testing, doesn't do anything currently as there is no way right now to access rsvp_events
-		        //so it does set all values currently to zero except all events
-		        String result = "all events: " + all_events + ", attended: " + user_attending + ", declined: " + user_declined + ", not_replied: " + user_not_replied;
-		        setText(result);
 
 			}
 			

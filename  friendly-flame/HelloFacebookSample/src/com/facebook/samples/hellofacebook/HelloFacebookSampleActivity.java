@@ -454,7 +454,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private void changeToEventActivity() {
     	   Session session = Session.getActiveSession();
            if (session != null && session.isOpened()) {
-        	  Intent eventsActivity = new Intent(this, EventsActivity.class);
+        	  Intent eventsActivity = new Intent(this, EventsListActivity.class);
          	  startActivity(eventsActivity); 
            }
     	
