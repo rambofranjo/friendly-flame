@@ -31,20 +31,17 @@
     <string name="no_friends_selected">&lt;No friends selected&gt;</string>
     <string name="no_place_selected">&lt;No place selected&gt;</string>
     <string name="pick_seattle_place">Pick a Seattle Place</string>
-    
     <string name="get_events">GetEventsActivity</string>
     <string name="events_activity">EventsActivity</string>
-     <string name="events_list_activity">EventsListActivity</string>
-     <string name="myevents_list_activity">MyEventsListActivity</string>
-    
+    <string name="events_list_activity">All Events</string>
+    <string name="myevents_list_activity">My Events</string>
     <string name="app_id">101522410025545</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    
     <string name="all_events">All events</string>
     <string name="my_events">My events</string>
     <string name="create_event">Create events</string>
     <string name="logout">logout</string>
-    
+    <string name="title_activity_event_detail_view">EventDetailView</string>
 
 </resources>

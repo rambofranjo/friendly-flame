@@ -46,17 +46,23 @@
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/app_id" />
-        
-         <activity
+
+        <activity
             android:name="com.facebook.samples.hellofacebook.EventsActivity"
             android:label="@string/events_activity" >
         </activity>
-        
-         <activity
+        <activity
             android:name="com.facebook.samples.hellofacebook.EventsListActivity"
             android:label="@string/events_list_activity" >
         </activity>
-        
+        <activity
+            android:name="com.facebook.samples.hellofacebook.MyEventsListActivity"
+            android:label="@string/myevents_list_activity" >
+        </activity>
+        <activity
+            android:name="com.facebook.samples.hellofacebook.EventDetailView"
+            android:label="@string/title_activity_event_detail_view" >
+        </activity>
     </application>
 
 </manifest>

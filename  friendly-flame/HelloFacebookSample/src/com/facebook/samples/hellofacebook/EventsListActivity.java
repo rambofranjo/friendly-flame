@@ -19,9 +19,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
+
+import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
 
 public class EventsListActivity extends ListActivity {
@@ -47,6 +53,25 @@ public class EventsListActivity extends ListActivity {
         
         setContentView(R.layout.main_events);
         getAllEvents();
+        
+        ListView lv = getListView();
+        // listening to single list item on click
+        lv.setOnItemClickListener(new OnItemClickListener() {
+          public void onItemClick(AdapterView<?> parent, View view,
+              int position, long id) {
+ 
+              // selected item
+              String product = ((TextView) view).getText().toString();
+ 
+              // Launching new Activity on selecting single List Item
+              Intent i = new Intent(getApplicationContext(), EventDetailView.class);
+              // sending data to new activity
+              i.putExtra("product", product);
+              startActivity(i);
+ 
+          }
+        });
+		
         
     }
 
@@ -101,8 +126,6 @@ public class EventsListActivity extends ListActivity {
     
     
     
-    // new
-    //
     
  // methods for getting data 
  	public void getAllEvents(){
@@ -187,7 +210,7 @@ public class EventsListActivity extends ListActivity {
 			t.printStackTrace();
 		}
 		
-		Log.d("userAllEventsResultReturn", returnStringResult[2]);
+		//Log.d("userAllEventsResultReturn", returnStringResult[2]);
 		
 		return userAllEventsResult;
 	}
