@@ -2,6 +2,15 @@ package com.facebook.samples.hellofacebook;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.facebook.HttpMethod;
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.model.GraphObject;
+
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,34 +25,41 @@ import android.widget.Toast;
 
 public class EventsListActivity extends ListActivity {
 	
-	FbEvent fbe = new FbEvent();
 	
 	int counter = 0; 
 	//String[] contactList;
 	String[] contactList = {"sadfasf", "asdfasf"};
 
+	private String[][] userAllEvents; 
+    private int userAttributes = 0; 
+    public String[] userAllEventsResult;
+	private int all_events = 0;
+    public String[] returnStringResult; 
+    
+    public ListAdapter adapter;
+	
 	
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle icicle) {
-        super.onCreate(icicle);
+    	super.onCreate(icicle);
+        
         setContentView(R.layout.main_events);
-        fbe.getAllEvents();
+        getAllEvents();
         
-        //contactList = fbe.getAllEvents();
-        
-        ListAdapter adapter = createAdapter();
-        setListAdapter(adapter);
     }
 
     /**
      * Creates and returns a list adapter for the current list activity
      * @return
      */
-    protected ListAdapter createAdapter()
+    protected ListAdapter createAdapter(String[] eventsArray)
     {
+    	
+    	Log.d("eventsArray", Integer.toString(eventsArray.length));
+    	
         // Create a simple array adapter (of type string) with the test values
-        ListAdapter adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, contactList);
+        ListAdapter adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, eventsArray);
 
         return adapter;
     }
@@ -81,5 +97,101 @@ public class EventsListActivity extends ListActivity {
         }
         return true;
     }
+    
+    
+    
+    // new
+    //
+    
+ // methods for getting data 
+ 	public void getAllEvents(){
+ 		String query_allEvents = "SELECT eid, name, start_time FROM event WHERE eid IN " +
+ 				"(SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
+ 		
+ 		String query = query_allEvents;
+ 		
+ 		//send FQL request and retrieve informations from JSON object
+         Bundle params = new Bundle();
+         params.putString("q", query);
+         Session session = Session.getActiveSession();
+         Request request = new Request(session,
+             "/fql",                         
+             params,                         
+             HttpMethod.GET,                 
+             new Request.Callback(){         
+                 public void onCompleted(Response response) {
+                     Log.i("TAG", "Result: " + response.toString());
+                     
+                     int len = parseUserFromFQLResponse(response).length;
+                     userAllEventsResult = new String[len];
+                     userAllEventsResult = parseUserFromFQLResponse(response); // ergebnis
+                    
+                     adapter = createAdapter(userAllEventsResult);
+                     setListAdapter(adapter);
+
+                     
+                 }                  
+         }); 
+         
+         
+         Request.executeBatchAsync(request);
+         
+ 	}
+ 	
+ 	
+ 	//method to filter needed informations from JSON Object
+    protected String[] parseUserFromFQLResponse(Response response) {
+		try {
+			//this will deliver all events where a user took some part in it,
+			//attending, declined, not_replied or maybe
+			GraphObject go = response.getGraphObject();
+			JSONObject jso = go.getInnerJSONObject();
+			JSONArray arr = jso.getJSONArray("data");
+			
+			//get all events by the length of the data array
+			// userAttributes = eventname, date, eid
+			all_events = arr.length();
+			userAttributes = 3;  	
+			
+			userAllEvents = new String[all_events][userAttributes];
+			userAllEventsResult = new String[all_events];
+			returnStringResult = new String[all_events];
+			
+			System.out.println("All Events: " + all_events);
+			
+			for (int i = 0; i < all_events; i++) {
+				
+					JSONObject json_obj = arr.getJSONObject(i);
+					// eid, name, start_time
+					
+					userAllEvents[i][0] = json_obj.getString("eid");
+					userAllEvents[i][1] = json_obj.getString("name");
+					userAllEvents[i][2] = json_obj.getString("start_time");
+					
+					/*
+					Log.d("test", userAllEvents[i][0]);
+					Log.d("test", userAllEvents[i][1]);
+					Log.d("test", userAllEvents[i][2]);
+					*/
+					
+					
+					userAllEventsResult[i] = userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2];
+					
+					returnStringResult[i] = userAllEventsResult[i];
+					Log.d("FbEvent-nachArrayZuweisung", returnStringResult[i]);
+					
+			}
+			
+		} catch(Throwable t) {
+			t.printStackTrace();
+		}
+		
+		Log.d("userAllEventsResultReturn", returnStringResult[2]);
+		
+		return userAllEventsResult;
+	}
+    
+    
+    
 
 }

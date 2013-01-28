@@ -3,13 +3,17 @@ package com.facebook.samples.hellofacebook;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
 
 import com.facebook.HttpMethod;
 import com.facebook.Request;
+import com.facebook.RequestAsyncTask;
 import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.model.GraphObject;
@@ -22,12 +26,22 @@ public class FbEvent {
 	private String location;
 	
 	private int all_events = 0;
-	public String[][] userAllEvents; 
+	private String[][] userAllEvents; 
     private int userAttributes = 0; 
     public String[] userAllEventsResult;
     
-    public FbEvent() {
-    	
+    public String[] returnStringResult; 
+    
+    public JSONObject data; 
+    
+    public String[] getReturnStringResult() {
+		return returnStringResult;
+	}
+
+	public FbEvent() {
+    	//Log.d("length:getallevents", Integer.toString(getAllEvents().length));
+    	//this.userAllEventsResult = new String[getAllEvents().length];
+    	//this.userAllEventsResult = getAllEvents();
     }
  
 	public FbEvent(String _id, String _title, String _sT, String _eT, String _loc){
@@ -37,6 +51,8 @@ public class FbEvent {
 		this.endTime = _eT;
 		this.location = _loc;
 	}
+	
+	
  
 	public String getId(){
 		return id;
@@ -76,15 +92,46 @@ public class FbEvent {
             new Request.Callback(){         
                 public void onCompleted(Response response) {
                     Log.i("TAG", "Result: " + response.toString());
+                    
+                    int len = parseUserFromFQLResponse(response).length;
+                    userAllEventsResult = new String[len];
+                    
                     userAllEventsResult = parseUserFromFQLResponse(response);
+                    
+                    Log.d("lengthArray", Integer.toString(userAllEventsResult.length));
+                    Log.d("userAllEventsResult", userAllEventsResult[2]);
+                    
+
+                    
                 }                  
         }); 
+        
+        
         Request.executeBatchAsync(request);
-		return userAllEventsResult;
+        
+        /*
+        try {
+			Log.d("json_obj_output", data.getString("title").toString());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        */
+        
+        String reqstr = request.getParameters().toString();
+        Log.d("reqstr", reqstr);
+        
+        /*
+        String ss = Request.executeBatchAsync(request).toString();
+        RequestAsyncTask res = Request.executeBatchAsync(request);
+        Log.d("ausg", res.toString());
+        */
+        
+		return userAllEventsResult; // dieser Parameter ist einfach NULL !!!!!!!!! ????????
 	}
 	
 	//method to filter needed informations from JSON Object
-    public String[] parseUserFromFQLResponse(Response response) {
+    protected String[] parseUserFromFQLResponse(Response response) {
 		try {
 			//this will deliver all events where a user took some part in it,
 			//attending, declined, not_replied or maybe
@@ -99,8 +146,7 @@ public class FbEvent {
 			
 			userAllEvents = new String[all_events][userAttributes];
 			userAllEventsResult = new String[all_events];
-			Log.d("FbEvent-userAllEventsResultlaenge :", Integer.toString(userAllEventsResult.length));
-			
+			returnStringResult = new String[all_events];
 			
 			System.out.println("All Events: " + all_events);
 			
@@ -113,21 +159,30 @@ public class FbEvent {
 					userAllEvents[i][1] = json_obj.getString("name");
 					userAllEvents[i][2] = json_obj.getString("start_time");
 					
+					/*
 					Log.d("test", userAllEvents[i][0]);
 					Log.d("test", userAllEvents[i][1]);
 					Log.d("test", userAllEvents[i][2]);
+					*/
 					
 					
 					userAllEventsResult[i] = userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2];
-					Log.d("FbEvent-nachArrayZuweisung", userAllEventsResult[2]);
+					
+					returnStringResult[i] = userAllEventsResult[i];
+					Log.d("FbEvent-nachArrayZuweisung", returnStringResult[i]);
+					
 			}
 			
 		} catch(Throwable t) {
 			t.printStackTrace();
 		}
-		Log.d("FbEvent-vorreturn", userAllEventsResult[0]);
+		
+		Log.d("userAllEventsResultReturn", returnStringResult[2]);
+		
 		return userAllEventsResult;
 	}
+    
+   
 	
 	
 } //end of class
