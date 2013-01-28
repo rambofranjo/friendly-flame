@@ -1,6 +1,7 @@
 package com.facebook.samples.hellofacebook;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -83,7 +84,7 @@ public class EventsListActivity extends ListActivity {
             	break;
 
             case R.id.my_events:
-                Toast.makeText(this, "My events", Toast.LENGTH_SHORT).show();
+            	startActivity(new Intent(this, MyEventsListActivity.class));
                 break;
               
             case R.id.create_event:
@@ -175,7 +176,7 @@ public class EventsListActivity extends ListActivity {
 					*/
 					
 					
-					userAllEventsResult[i] = userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2];
+					userAllEventsResult[i] = userAllEvents[i][1] + ", " + userAllEvents[i][2];
 					
 					returnStringResult[i] = userAllEventsResult[i];
 					Log.d("FbEvent-nachArrayZuweisung", returnStringResult[i]);
@@ -190,8 +191,6 @@ public class EventsListActivity extends ListActivity {
 		
 		return userAllEventsResult;
 	}
-    
-    
     
 
 }

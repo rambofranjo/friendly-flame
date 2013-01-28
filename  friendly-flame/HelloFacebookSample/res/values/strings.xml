@@ -35,6 +35,7 @@
     <string name="get_events">GetEventsActivity</string>
     <string name="events_activity">EventsActivity</string>
      <string name="events_list_activity">EventsListActivity</string>
+     <string name="myevents_list_activity">MyEventsListActivity</string>
     
     <string name="app_id">101522410025545</string>
     <string name="hello_world">Hello world!</string>

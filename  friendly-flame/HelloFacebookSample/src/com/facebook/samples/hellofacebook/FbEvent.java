@@ -166,7 +166,7 @@ public class FbEvent {
 					*/
 					
 					
-					userAllEventsResult[i] = userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2];
+					userAllEventsResult[i] = userAllEvents[i][1] + ", " + userAllEvents[i][2];
 					
 					returnStringResult[i] = userAllEventsResult[i];
 					Log.d("FbEvent-nachArrayZuweisung", returnStringResult[i]);

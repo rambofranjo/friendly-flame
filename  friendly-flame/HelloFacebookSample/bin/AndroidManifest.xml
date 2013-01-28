@@ -57,6 +57,11 @@
             android:label="@string/events_list_activity" >
         </activity>
         
+         <activity
+            android:name="com.facebook.samples.hellofacebook.MyEventsListActivity"
+            android:label="@string/myevents_list_activity" >
+        </activity>
+        
     </application>
 
 </manifest>
