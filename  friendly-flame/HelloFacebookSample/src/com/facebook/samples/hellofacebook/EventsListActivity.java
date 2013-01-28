@@ -37,14 +37,14 @@ public class EventsListActivity extends ListActivity {
 	//String[] contactList;
 	String[] contactList = {"sadfasf", "asdfasf"};
 
-	private String[][] userAllEvents; 
+	public String[][] userAllEvents; 
     private int userAttributes = 0; 
     public String[] userAllEventsResult;
 	private int all_events = 0;
     public String[] returnStringResult; 
     
     public ListAdapter adapter;
-	
+	public int len = 0; 
 	
 	/** Called when the activity is first created. */
     @Override
@@ -61,13 +61,16 @@ public class EventsListActivity extends ListActivity {
               int position, long id) {
  
               // selected item
-              String product = ((TextView) view).getText().toString();
+             // String product = ((TextView) view).getText().toString();
  
               // Launching new Activity on selecting single List Item
               Intent i = new Intent(getApplicationContext(), EventDetailView.class);
               // sending data to new activity
-              i.putExtra("product", product);
+              i.putExtra("eid", userAllEvents[position][0]);
+              Log.d("EventsListActivity-ListView", userAllEvents[position][0]);
               startActivity(i);
+              
+              
  
           }
         });
@@ -146,7 +149,7 @@ public class EventsListActivity extends ListActivity {
                  public void onCompleted(Response response) {
                      Log.i("TAG", "Result: " + response.toString());
                      
-                     int len = parseUserFromFQLResponse(response).length;
+                     len = parseUserFromFQLResponse(response).length;
                      userAllEventsResult = new String[len];
                      userAllEventsResult = parseUserFromFQLResponse(response); // ergebnis
                     

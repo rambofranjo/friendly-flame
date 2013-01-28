@@ -14,12 +14,18 @@ public class EventDetailView extends Activity {
 		
 		Log.d("EventDetailView", "test");
 		
+		Bundle extras = getIntent().getExtras();
+		String eid = extras.getString("eid");
+		Log.d("EventDetailView", eid);
+		
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.activity_event_detail_view, menu);
+		
+		
 		return true;
 	}
 
