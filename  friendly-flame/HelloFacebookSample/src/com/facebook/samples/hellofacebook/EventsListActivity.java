@@ -19,7 +19,7 @@ public class EventsListActivity extends ListActivity {
 	FbEvent fbe = new FbEvent();
 	
 	int counter = 0; 
-	ArrayList<String> contactList;
+	String[] contactList;
 	
 	
 	//String[] contactList = {"sadfasf", "asdfasf"};
@@ -31,10 +31,7 @@ public class EventsListActivity extends ListActivity {
         super.onCreate(icicle);
         setContentView(R.layout.main_events);
         
-        contactList = fbe.getArray();
-        for (String al:contactList) {
-        	Log.d("contactListi", al.toString());
-        }
+        contactList = fbe.getAllEvents();
         
         ListAdapter adapter = createAdapter();
         setListAdapter(adapter);

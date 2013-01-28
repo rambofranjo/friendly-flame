@@ -24,7 +24,7 @@ public class FbEvent {
 	private int all_events = 0;
 	private String[][] userAllEvents; 
     private int userAttributes = 0; 
-    private ArrayList <String> userAllEventsString = new ArrayList<String>();
+    private String[] userAllEventsResult;
     
     public FbEvent() {
     	
@@ -58,12 +58,8 @@ public class FbEvent {
 		return location;
 	}
 	
-	public ArrayList<String> getArray() {
-		return userAllEventsString;
-	}
-	
 	// methods for getting data 
-	public void getAllEvents(){
+	public String[] getAllEvents(){
 		String query_allEvents = "SELECT eid, name, start_time FROM event WHERE eid IN " +
 				"(SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
 		
@@ -80,14 +76,15 @@ public class FbEvent {
             new Request.Callback(){         
                 public void onCompleted(Response response) {
                     Log.i("TAG", "Result: " + response.toString());
-                    parseUserFromFQLResponse(response);
+                    userAllEventsResult = parseUserFromFQLResponse(response);
                 }                  
         }); 
         Request.executeBatchAsync(request);
+		return userAllEventsResult;
 	}
 	
 	//method to filter needed informations from JSON Object
-    protected void parseUserFromFQLResponse(Response response) {
+    protected String[] parseUserFromFQLResponse(Response response) {
 		try {
 			//this will deliver all events where a user took some part in it,
 			//attending, declined, not_replied or maybe
@@ -101,6 +98,7 @@ public class FbEvent {
 			userAttributes = 3;  	
 			
 			userAllEvents = new String[all_events][userAttributes];
+			userAllEventsResult = new String[all_events];
 			
 			
 			System.out.println("All Events: " + all_events);
@@ -121,13 +119,13 @@ public class FbEvent {
 					*/
 					
 					
-					userAllEventsString.add(i,userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2]);
-					Log.d("userAllEvents", userAllEventsString.get(i));
+					userAllEventsResult[i] = userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2];
 			}
 			
 		} catch(Throwable t) {
 			t.printStackTrace();
 		}
+		return userAllEventsResult;
 	}
 	
 	
