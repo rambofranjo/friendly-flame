@@ -22,9 +22,9 @@ public class FbEvent {
 	private String location;
 	
 	private int all_events = 0;
-	private String[][] userAllEvents; 
+	public String[][] userAllEvents; 
     private int userAttributes = 0; 
-    private String[] userAllEventsResult;
+    public String[] userAllEventsResult;
     
     public FbEvent() {
     	
@@ -84,7 +84,7 @@ public class FbEvent {
 	}
 	
 	//method to filter needed informations from JSON Object
-    protected String[] parseUserFromFQLResponse(Response response) {
+    public String[] parseUserFromFQLResponse(Response response) {
 		try {
 			//this will deliver all events where a user took some part in it,
 			//attending, declined, not_replied or maybe
@@ -99,6 +99,7 @@ public class FbEvent {
 			
 			userAllEvents = new String[all_events][userAttributes];
 			userAllEventsResult = new String[all_events];
+			Log.d("FbEvent-userAllEventsResultlaenge :", Integer.toString(userAllEventsResult.length));
 			
 			
 			System.out.println("All Events: " + all_events);
@@ -112,19 +113,19 @@ public class FbEvent {
 					userAllEvents[i][1] = json_obj.getString("name");
 					userAllEvents[i][2] = json_obj.getString("start_time");
 					
-					/*
 					Log.d("test", userAllEvents[i][0]);
 					Log.d("test", userAllEvents[i][1]);
 					Log.d("test", userAllEvents[i][2]);
-					*/
 					
 					
 					userAllEventsResult[i] = userAllEvents[i][0] + " " + userAllEvents[i][1] + ", " + userAllEvents[i][2];
+					Log.d("FbEvent-nachArrayZuweisung", userAllEventsResult[2]);
 			}
 			
 		} catch(Throwable t) {
 			t.printStackTrace();
 		}
+		Log.d("FbEvent-vorreturn", userAllEventsResult[0]);
 		return userAllEventsResult;
 	}
 	

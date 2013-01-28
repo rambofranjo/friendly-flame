@@ -19,10 +19,8 @@ public class EventsListActivity extends ListActivity {
 	FbEvent fbe = new FbEvent();
 	
 	int counter = 0; 
-	String[] contactList;
-	
-	
-	//String[] contactList = {"sadfasf", "asdfasf"};
+	//String[] contactList;
+	String[] contactList = {"sadfasf", "asdfasf"};
 
 	
 	/** Called when the activity is first created. */
@@ -30,8 +28,9 @@ public class EventsListActivity extends ListActivity {
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.main_events);
+        fbe.getAllEvents();
         
-        contactList = fbe.getAllEvents();
+        //contactList = fbe.getAllEvents();
         
         ListAdapter adapter = createAdapter();
         setListAdapter(adapter);
