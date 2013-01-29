@@ -36,6 +36,7 @@ public class EventDetailView extends Activity {
     
     public String query_allEvents;
     public String query_eventStatus;
+//    private Flame flame = new Flame();
 		
     
     
@@ -190,22 +191,27 @@ public class EventDetailView extends Activity {
 				//save attributes in multidimensional arrays
 				userRSVP[0][0] = json_obj.getString("rsvp_status");
 				String status = "";
+				String color;
 				
 				if (userRSVP[0][0].equals("attending")) {
 					status = "zugesagt";
+					color = "green";
 				} else if (userRSVP[0][0].equals("declined")) {
 					status = "abgesagt";
+					color = "red";
 				} else if (userRSVP[0][0].equals("unsure")) {
 					status = "unsicher";
+					color = "orange";
 				} else {
 					status = "noch nicht beantwortet";
+					color = "blue";
 				}
 				
 				
 				Log.d("rsvp", userRSVP[0][0]);
 				
 				rsvpText.setText("Status: " + status);
-
+//				flame.flameConnector(color);
 				//set textviews with results from FQL query to certain event
 //				nameText.setText("Event: " + userAllEvents[0][1]);
 //				dateText.setText("Datum: " + userAllEvents[0][2]);					

@@ -1,5 +1,16 @@
 package com.facebook.samples.hellofacebook;
 
+import java.io.IOException;
+
+import com.android.future.usb.UsbAccessory;
+import com.android.future.usb.UsbManager;
+
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.util.Log;
+
 //class to control the status of the flame
 
 /**
@@ -13,12 +24,15 @@ package com.facebook.samples.hellofacebook;
  * @author Kahochan
  *
  */
-public class Flame {
+public class Flame extends Activity{
 	
 	//blue chip, red chip and white rfid tags
 	String acceptRSP = "01005E0D7010";
     String declineRSP = "3C00CEB1F3C0";
     String maybeRSP = "0300B12C7030";
+
+    ArduinoServices arduino = new ArduinoServices();
+    HelloFacebookSampleActivity hfsa = new HelloFacebookSampleActivity();
 	
 	//to calculate the outgoingness of a user
     public float[] calculateOutgoingness() {
@@ -106,5 +120,18 @@ public class Flame {
     	}
     			
     	//TODO sent decision to FB event
+    }
+    
+    public void flameConnector(String color) {
+    	
+    	byte[] flamecolor = new byte[1];
+    	
+    	if ( color.equals("red")) flamecolor[0]=(byte)0;
+    	if ( color.equals("green")) flamecolor[0]=(byte)1;
+    	if ( color.equals("orange")) flamecolor[0]=(byte)2;
+    	if ( color.equals("blue")) flamecolor[0]=(byte)3;
+    	
+    	startActivity(new Intent(this, ArduinoServices.class));
+    	arduino.bufferWrite(flamecolor);
     }
 } //end of class
