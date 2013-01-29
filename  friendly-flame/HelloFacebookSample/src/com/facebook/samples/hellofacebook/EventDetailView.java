@@ -8,6 +8,7 @@ import com.facebook.Request;
 import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.model.GraphObject;
+import com.facebook.samples.hellofacebook.R;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -15,10 +16,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
+//detailview for events
 public class EventDetailView extends Activity {
 
 	
-	String eid;
+	public String eid;
 	public String[] userAllEventsResult;
 	public String[][] userAllEvents; 
     private int userAttributes = 0; 
@@ -41,9 +43,12 @@ public class EventDetailView extends Activity {
 		eid = extras.getString("eid");
 		Log.d("EventDetailView", eid);
 		
+		//setup text fields for GUI
 		nameText = (TextView) findViewById(R.id.eventName);
 		dateText = (TextView) findViewById(R.id.eventDate);
 		locationText = (TextView)findViewById(R.id.location);
+		
+		//get details for current event
 		getAllEvents();
 		
 	}
@@ -52,12 +57,10 @@ public class EventDetailView extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.activity_event_detail_view, menu);
-		
-		
 		return true;
 	}
 	
-	// methods for getting data 
+		//method to execute FQL query, get the event with the given eid
 	 	public void getAllEvents(){
 	 		String query_allEvents = "SELECT eid, name, start_time, location FROM event WHERE eid =  " + eid;
 	 		Log.d("query", query_allEvents);
@@ -76,16 +79,12 @@ public class EventDetailView extends Activity {
 	             new Request.Callback(){         
 	                 public void onCompleted(Response response) {
 	                     Log.i("TAG", "Result: " + response.toString());
-	                     parseUserFromFQLResponse(response); // ergebnis
-	                    
-
 	                     
+	                     //parse output from FQL query
+	                     parseUserFromFQLResponse(response); //  
 	                 }                  
 	         }); 
-	         
-	         
-	         Request.executeBatchAsync(request);
-	         
+	         Request.executeBatchAsync(request);    
 	 	}
 	 	
 	 	
@@ -99,40 +98,41 @@ public class EventDetailView extends Activity {
 				JSONArray arr = jso.getJSONArray("data");
 				
 				//get all events by the length of the data array
-				// userAttributes = eventname, date, eid
+				// userAttributes = eventname, date, eid and location
 				all_events = arr.length();
 				userAttributes = 4;  	
 				
+				//array to find all informations of event
 				userAllEvents = new String[all_events][userAttributes];
+				
+				//array for string concatenation
 				userAllEventsResult = new String[all_events];
+				
+				//array for final results
 				returnStringResult = new String[all_events];
-				
-				System.out.println("All Events: " + all_events);
-				
-	
-					
-						JSONObject json_obj = arr.getJSONObject(0);
-						// eid, name, start_time
-						
-						userAllEvents[0][0] = json_obj.getString("eid");
-						userAllEvents[0][1] = json_obj.getString("name");
-						userAllEvents[0][2] = json_obj.getString("start_time");
-						userAllEvents[0][3] = json_obj.getString("location");
-						
-						Log.d("eid", userAllEvents[0][0]);
-						Log.d("name", userAllEvents[0][1]);
-						Log.d("start_time", userAllEvents[0][2]);
-						Log.d("location", userAllEvents[0][3]);
+				JSONObject json_obj = arr.getJSONObject(0);
 
-						
-						
-						nameText.setText(userAllEvents[0][1]);
-						dateText.setText(userAllEvents[0][2]);
-						locationText.setText(userAllEvents[0][3]);
-						
-						
-						//userAllEventsResult[i] = userAllEvents[i][1] + ", " + userAllEvents[i][2];
-						
+				//save attributes in multidimensional arrays
+				userAllEvents[0][0] = json_obj.getString("eid");
+				userAllEvents[0][1] = json_obj.getString("name");
+				userAllEvents[0][2] = json_obj.getString("start_time");
+				userAllEvents[0][3] = json_obj.getString("location");
+				
+				/**
+				Log.d("eid", userAllEvents[0][0]);
+				Log.d("name", userAllEvents[0][1]);
+				Log.d("start_time", userAllEvents[0][2]);
+				Log.d("location", userAllEvents[0][3]);
+				**/
+
+				//set textviews with results from FQL query to certain event
+				nameText.setText("Event: " + userAllEvents[0][1]);
+				dateText.setText("Datum: " + userAllEvents[0][2]);
+				
+				//hide location if no location was entered
+				if (!userAllEvents[0][3].equals("null")) {
+					locationText.setText("Ort: " + userAllEvents[0][3]);
+				}						
 	
 				
 			} catch(Throwable t) {
@@ -140,4 +140,4 @@ public class EventDetailView extends Activity {
 			}
 		}
 
-}
+} //end of class

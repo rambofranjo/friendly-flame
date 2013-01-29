@@ -1,3 +1,4 @@
+
 /**
  * Copyright 2012 Facebook
  *
@@ -35,6 +36,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Hashtable;
 
+//helper class needed for the main activity
 public class Utility extends Application {
 
     public static Facebook mFacebook;

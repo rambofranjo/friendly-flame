@@ -1,23 +1,16 @@
 package com.facebook.samples.hellofacebook;
 
-import java.util.ArrayList;
-
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
-
 import com.facebook.HttpMethod;
 import com.facebook.Request;
-import com.facebook.RequestAsyncTask;
 import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.model.GraphObject;
 
+//class to implement fb methods
 public class FbEvent {
 	private String id;
 	private String title;
@@ -29,21 +22,15 @@ public class FbEvent {
 	private String[][] userAllEvents; 
     private int userAttributes = 0; 
     public String[] userAllEventsResult;
-    
     public String[] returnStringResult; 
-    
     public JSONObject data; 
-    
-    public String[] getReturnStringResult() {
-		return returnStringResult;
-	}
 
 	public FbEvent() {
     	//Log.d("length:getallevents", Integer.toString(getAllEvents().length));
     	//this.userAllEventsResult = new String[getAllEvents().length];
     	//this.userAllEventsResult = getAllEvents();
     }
- 
+	//constructor and getters/setters
 	public FbEvent(String _id, String _title, String _sT, String _eT, String _loc){
 		this.id = _id;
 		this.title = _title;
@@ -52,8 +39,6 @@ public class FbEvent {
 		this.location = _loc;
 	}
 	
-	
- 
 	public String getId(){
 		return id;
 	}
@@ -74,7 +59,11 @@ public class FbEvent {
 		return location;
 	}
 	
-	// methods for getting data 
+	public String[] getReturnStringResult() {
+		return returnStringResult;
+	}
+	
+    //method to execute FQL query, receive all events of the logged in user
 	public String[] getAllEvents(){
 		String query_allEvents = "SELECT eid, name, start_time FROM event WHERE eid IN " +
 				"(SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
@@ -95,39 +84,22 @@ public class FbEvent {
                     
                     int len = parseUserFromFQLResponse(response).length;
                     userAllEventsResult = new String[len];
-                    
                     userAllEventsResult = parseUserFromFQLResponse(response);
-                    
                     Log.d("lengthArray", Integer.toString(userAllEventsResult.length));
-                    Log.d("userAllEventsResult", userAllEventsResult[2]);
-                    
-
-                    
+                    Log.d("userAllEventsResult", userAllEventsResult[2]); 
                 }                  
-        }); 
-        
-        
+        });
         Request.executeBatchAsync(request);
         
         /*
-        try {
-			Log.d("json_obj_output", data.getString("title").toString());
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        */
-        
         String reqstr = request.getParameters().toString();
         Log.d("reqstr", reqstr);
-        
-        /*
         String ss = Request.executeBatchAsync(request).toString();
         RequestAsyncTask res = Request.executeBatchAsync(request);
         Log.d("ausg", res.toString());
         */
         
-		return userAllEventsResult; // dieser Parameter ist einfach NULL !!!!!!!!! ????????
+		return userAllEventsResult;
 	}
 	
 	//method to filter needed informations from JSON Object
@@ -147,9 +119,7 @@ public class FbEvent {
 			userAllEvents = new String[all_events][userAttributes];
 			userAllEventsResult = new String[all_events];
 			returnStringResult = new String[all_events];
-			
-			System.out.println("All Events: " + all_events);
-			
+						
 			for (int i = 0; i < all_events; i++) {
 				
 					JSONObject json_obj = arr.getJSONObject(i);
@@ -165,9 +135,7 @@ public class FbEvent {
 					Log.d("test", userAllEvents[i][2]);
 					*/
 					
-					
-					userAllEventsResult[i] = userAllEvents[i][1] + ", " + userAllEvents[i][2];
-					
+					userAllEventsResult[i] = userAllEvents[i][1] + ", " + userAllEvents[i][2];	
 					returnStringResult[i] = userAllEventsResult[i];
 					Log.d("FbEvent-nachArrayZuweisung", returnStringResult[i]);
 					
@@ -181,8 +149,4 @@ public class FbEvent {
 		
 		return userAllEventsResult;
 	}
-    
-   
-	
-	
 } //end of class

@@ -1,9 +1,6 @@
 package com.facebook.samples.hellofacebook;
 
-import android.graphics.Color;
-import android.test.IsolatedContext;
-
-//class to controll the status of the flame
+//class to control the status of the flame
 
 /**
  * FRIENDLY FLAME COLOR MODES and codes:
@@ -59,6 +56,7 @@ public class Flame {
     	return hsv;
     }
     
+    //probably obsolete as we will use colors instead of intensities
     //method to change HSV color to string with format Y+colorValue 
     //colorValue lies between 0 and 255
     public String changeHSVToString(float[] color) {
@@ -109,7 +107,4 @@ public class Flame {
     			
     	//TODO sent decision to FB event
     }
-    
-    
-
-}
+} //end of class

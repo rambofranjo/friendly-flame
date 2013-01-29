@@ -16,7 +16,6 @@
 
 package com.facebook.samples.hellofacebook;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -26,23 +25,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.android.future.usb.UsbAccessory;
@@ -50,25 +42,19 @@ import com.android.future.usb.UsbManager;
 import com.facebook.*;
 import com.facebook.android.AsyncFacebookRunner;
 import com.facebook.android.Facebook;
-import com.facebook.samples.hellofacebook.Utility;
-import com.facebook.model.GraphObject;
+import com.facebook.samples.hellofacebook.R;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.*;
-
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-
-
+//main activity for this application
 public class HelloFacebookSampleActivity extends Activity {
 
-
-
     private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
-
     // TAG is used to debug in Android logcat console
  	private static final String TAG = "ArduinoAccessory";
 	private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
@@ -77,14 +63,12 @@ public class HelloFacebookSampleActivity extends Activity {
     private Button showFriendsEvents;
     private Button showMyEvents;
     private LoginButton loginButton;
-    private ToggleButton lightButton;
     private ProfilePictureView profilePictureView;
     private ImageView logo;
     private TextView greeting;
     private TextView appTitle;
     private TextView welcome;
     private PendingAction pendingAction = PendingAction.NONE;
-    private ViewGroup controlsContainer;
     private GraphUser user;
     private View layoutView;
     private Flame flame;
@@ -93,11 +77,13 @@ public class HelloFacebookSampleActivity extends Activity {
     private UsbManager mUsbManager;
 	private PendingIntent mPermissionIntent;
 	private boolean mPermissionRequestPending;
+	private UiLifecycleHelper uiHelper;
 	
 	private BaseAdapter userPermissionsAdapter;
     
     final static int AUTHORIZE_ACTIVITY_RESULT_CODE = 0;
     
+    //define needed permissions
     String[] permissions = { "offline_access", "publish_stream", "user_photos", "publish_checkins",
     "photo_upload" };
     
@@ -113,15 +99,13 @@ public class HelloFacebookSampleActivity extends Activity {
 	FileInputStream mInputStream;
 	FileOutputStream mOutputStream;
 	
-
-
     private enum PendingAction {
         NONE,
         POST_PHOTO,
         POST_STATUS_UPDATE
     }
-    private UiLifecycleHelper uiHelper;
-
+    
+    
     private Session.StatusCallback callback = new Session.StatusCallback() {
         @Override
         public void call(Session session, SessionState state, Exception exception) {
@@ -129,6 +113,7 @@ public class HelloFacebookSampleActivity extends Activity {
         }
     };
     
+    //needed for Arduino USB communication
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -163,11 +148,7 @@ public class HelloFacebookSampleActivity extends Activity {
         
         SharedPreferences mPrefs = getPreferences(MODE_PRIVATE);
         String access_token = mPrefs.getString("access_token", null);
-        
         Session session = Session.getActiveSession();
-        
-        
-
         
         if (session == null) {      
             // Check if there is an existing token to be migrated 
@@ -188,13 +169,8 @@ public class HelloFacebookSampleActivity extends Activity {
             }
         }
         
-        
-        
-        
-        
         uiHelper = new UiLifecycleHelper(this, callback);
         uiHelper.onCreate(savedInstanceState);
-        
 
         if (savedInstanceState != null) {
             String name = savedInstanceState.getString(PENDING_ACTION_BUNDLE_KEY);
@@ -232,10 +208,7 @@ public class HelloFacebookSampleActivity extends Activity {
         permissionslist = Arrays.asList(user_permissions);
         loginButton.clearPermissions();
         loginButton.setReadPermissions(permissionslist);
-        
-        
-        //loginButton.setApplicationId("101522410025545");
-        
+                
         loginButton.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
             @Override
             public void onUserInfoFetched(GraphUser user) {
@@ -250,17 +223,14 @@ public class HelloFacebookSampleActivity extends Activity {
             }
         });
 
-        //PROFILE PICTURE
+        //set up profile picture
         profilePictureView = (ProfilePictureView) findViewById(R.id.profilePicture);
         greeting = (TextView) findViewById(R.id.greeting);
         appTitle = (TextView) findViewById(R.id.app_title);
         welcome = (TextView) findViewById(R.id.welcome);
         logo = (ImageView) findViewById(R.id.logo);
-  
     }
     
-
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -293,7 +263,6 @@ public class HelloFacebookSampleActivity extends Activity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         uiHelper.onSaveInstanceState(outState);
-
         outState.putString(PENDING_ACTION_BUNDLE_KEY, pendingAction.name());
     }
 
@@ -363,20 +332,15 @@ public class HelloFacebookSampleActivity extends Activity {
         Session session = Session.getActiveSession();
         boolean enableButtons = (session != null && session.isOpened());
         
-        
         createEvent.setEnabled(enableButtons);
         showFriendsEvents.setEnabled(enableButtons);
         showMyEvents.setEnabled(enableButtons);
-        
 
         //show or hide content, depending on login-status
         if (enableButtons && user != null) {
         	showContentLoggedIn();
-        	
-            
         } else {
         	hideContentLoggedOut();
-        	
         }
     }
     
@@ -407,17 +371,13 @@ public class HelloFacebookSampleActivity extends Activity {
     
     */
 
-    
     private void changeToEventActivity() {
     	   Session session = Session.getActiveSession();
            if (session != null && session.isOpened()) {
         	  Intent eventsActivity = new Intent(this, EventsListActivity.class);
          	  startActivity(eventsActivity); 
-           }
-    	
-    	  
+           }  
     }
-   
     
     //show content if logged in
     private void showContentLoggedIn() {
@@ -435,9 +395,7 @@ public class HelloFacebookSampleActivity extends Activity {
         //set color of the background according to outgoingness
         flame = new Flame();
         layoutView= findViewById(R.id.main_ui_container); 
-        layoutView.setBackgroundColor(Color.HSVToColor(flame.calculateOutgoingness()));
-
-        
+        layoutView.setBackgroundColor(Color.HSVToColor(flame.calculateOutgoingness())); 
     }
     
     //hide content if user is not logged in
@@ -456,9 +414,7 @@ public class HelloFacebookSampleActivity extends Activity {
         //set color of the background according to outgoingness
         flame = new Flame();
         layoutView= findViewById(R.id.main_ui_container); 
-        layoutView.setBackgroundColor(Color.WHITE);
-        
-        
+        layoutView.setBackgroundColor(Color.WHITE);  
     }
     
     private void bufferWrite(byte[] buffer) {
@@ -470,9 +426,4 @@ public class HelloFacebookSampleActivity extends Activity {
 			}
 		}
     }
-   
-    
-    
-    
-
 } //end class

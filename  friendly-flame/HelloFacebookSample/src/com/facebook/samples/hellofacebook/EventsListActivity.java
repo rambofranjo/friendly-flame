@@ -1,16 +1,15 @@
 package com.facebook.samples.hellofacebook;
 
-import java.util.ArrayList;
-import java.util.Date;
-
+//class for showing all events of the user, including the ones
+//where he was invited and those where he is the creator himself
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import com.facebook.HttpMethod;
 import com.facebook.Request;
 import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.model.GraphObject;
+import com.facebook.samples.hellofacebook.R;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -25,18 +24,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-
-import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 
 public class EventsListActivity extends ListActivity {
 	
-	
-	int counter = 0; 
-	//String[] contactList;
-	String[] contactList = {"sadfasf", "asdfasf"};
-
 	public String[][] userAllEvents; 
     private int userAttributes = 0; 
     public String[] userAllEventsResult;
@@ -45,6 +37,7 @@ public class EventsListActivity extends ListActivity {
     
     public ListAdapter adapter;
 	public int len = 0; 
+	public FbEvent fb = new FbEvent();
 	
 	/** Called when the activity is first created. */
     @Override
@@ -54,42 +47,31 @@ public class EventsListActivity extends ListActivity {
         setContentView(R.layout.main_events);
         getAllEvents();
         
+        //get the listView
         ListView lv = getListView();
-        // listening to single list item on click
+        
+        //listening to single list item on click
         lv.setOnItemClickListener(new OnItemClickListener() {
           public void onItemClick(AdapterView<?> parent, View view,
               int position, long id) {
  
-              // selected item
-             // String product = ((TextView) view).getText().toString();
- 
-              // Launching new Activity on selecting single List Item
+              //create new intent depending on position of click
               Intent i = new Intent(getApplicationContext(), EventDetailView.class);
-              // sending data to new activity
+              
+              //sending data to new activity with the eid of the event
               i.putExtra("eid", userAllEvents[position][0]);
               Log.d("EventsListActivity-ListView", userAllEvents[position][0]);
               startActivity(i);
-              
-              
- 
           }
         });
-		
-        
     }
 
-    /**
-     * Creates and returns a list adapter for the current list activity
-     * @return
-     */
-    protected ListAdapter createAdapter(String[] eventsArray)
-    {
+    //create the list needed for this view
+    protected ListAdapter createAdapter(String[] eventsArray) {
     	
     	Log.d("eventsArray", Integer.toString(eventsArray.length));
-    	
-        // Create a simple array adapter (of type string) with the test values
+        // Create a simple array adapter (of type string)
         ListAdapter adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, eventsArray);
-
         return adapter;
     }
     
@@ -101,14 +83,12 @@ public class EventsListActivity extends ListActivity {
 		return super.onCreateOptionsMenu(menu);
 	}
     
-    @Override
+	//listener for menu
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 
             case R.id.all_events:
             	startActivity(new Intent(this, EventsListActivity.class));
-
-            	
             	break;
 
             case R.id.my_events:
@@ -122,7 +102,6 @@ public class EventsListActivity extends ListActivity {
             case R.id.logout:
             	Toast.makeText(this, "logout", Toast.LENGTH_SHORT).show();
             	break; 
-            	
         }
         return true;
     }
@@ -130,11 +109,10 @@ public class EventsListActivity extends ListActivity {
     
     
     
- // methods for getting data 
- 	public void getAllEvents(){
+    //method to execute FQL query, receive all events of the logged in user
+    public void getAllEvents(){
  		String query_allEvents = "SELECT eid, name, start_time FROM event WHERE eid IN " +
  				"(SELECT eid FROM event_member WHERE uid = me() and start_time > 0)";
- 		
  		String query = query_allEvents;
  		
  		//send FQL request and retrieve informations from JSON object
@@ -150,27 +128,24 @@ public class EventsListActivity extends ListActivity {
                      Log.i("TAG", "Result: " + response.toString());
                      
                      len = parseUserFromFQLResponse(response).length;
-                     userAllEventsResult = new String[len];
-                     userAllEventsResult = parseUserFromFQLResponse(response); // ergebnis
-                    
-                     adapter = createAdapter(userAllEventsResult);
-                     setListAdapter(adapter);
-
                      
+                     //create new array depending on number of events
+                     userAllEventsResult = new String[len];
+                     userAllEventsResult = parseUserFromFQLResponse(response);
+                    
+                     //get all events from the user and add them to the list
+                     adapter = createAdapter(userAllEventsResult);
+                     setListAdapter(adapter);   
                  }                  
          }); 
-         
-         
-         Request.executeBatchAsync(request);
-         
+         Request.executeBatchAsync(request);  
  	}
  	
  	
  	//method to filter needed informations from JSON Object
     protected String[] parseUserFromFQLResponse(Response response) {
 		try {
-			//this will deliver all events where a user took some part in it,
-			//attending, declined, not_replied or maybe
+			//search json object for needed data
 			GraphObject go = response.getGraphObject();
 			JSONObject jso = go.getInnerJSONObject();
 			JSONArray arr = jso.getJSONArray("data");
@@ -180,17 +155,15 @@ public class EventsListActivity extends ListActivity {
 			all_events = arr.length();
 			userAttributes = 3;  	
 			
+			//create multidimensional array to store all attributes of FQL query
 			userAllEvents = new String[all_events][userAttributes];
 			userAllEventsResult = new String[all_events];
 			returnStringResult = new String[all_events];
 			
-			System.out.println("All Events: " + all_events);
-			
+			//loop through whole json object
 			for (int i = 0; i < all_events; i++) {
 				
-					JSONObject json_obj = arr.getJSONObject(i);
-					// eid, name, start_time
-					
+					JSONObject json_obj = arr.getJSONObject(i);	
 					userAllEvents[i][0] = json_obj.getString("eid");
 					userAllEvents[i][1] = json_obj.getString("name");
 					userAllEvents[i][2] = json_obj.getString("start_time");
@@ -201,22 +174,15 @@ public class EventsListActivity extends ListActivity {
 					Log.d("test", userAllEvents[i][2]);
 					*/
 					
-					
-					userAllEventsResult[i] = userAllEvents[i][1] + ", " + userAllEvents[i][2];
-					
+					//combine all attributes of one event to a single string for the string array
+					userAllEventsResult[i] = userAllEvents[i][1] + "\n " + userAllEvents[i][2];
 					returnStringResult[i] = userAllEventsResult[i];
 					Log.d("FbEvent-nachArrayZuweisung", returnStringResult[i]);
-					
 			}
 			
 		} catch(Throwable t) {
 			t.printStackTrace();
 		}
-		
-		//Log.d("userAllEventsResultReturn", returnStringResult[2]);
-		
 		return userAllEventsResult;
 	}
-    
-
-}
+} //end of class
