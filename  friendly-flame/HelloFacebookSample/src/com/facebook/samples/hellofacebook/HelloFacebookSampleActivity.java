@@ -20,18 +20,19 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -46,10 +47,8 @@ import com.facebook.android.Facebook;
 import com.facebook.samples.hellofacebook.R;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.*;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.*;
 
 //main activity for this application
@@ -73,7 +72,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     private PendingAction pendingAction = PendingAction.NONE;
     private GraphUser user;
     private View layoutView;
-    private Flame flame;
+//    private Flame flame;
     
     private Handler mHandler;
     private UsbManager mUsbManager;
@@ -116,33 +115,50 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     };
     
     //needed for Arduino USB communication
-    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+
+	private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
-			if (ACTION_USB_PERMISSION.equals(action)) {
-				synchronized (this) {
-					UsbAccessory accessory = UsbManager.getAccessory(intent);
-					if (intent.getBooleanExtra(
-							UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-						openAccessory(accessory);
-					} else {
-						Log.d(TAG, "permission denied for accessory "
-								+ accessory);
-					}
-					mPermissionRequestPending = false;
-				}
-			} else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
-				UsbAccessory accessory = UsbManager.getAccessory(intent);
-				if (accessory != null && accessory.equals(mAccessory)) {
-					closeAccessory();
-				}
+			 if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
+			    unbindService(arduinoConnection);
+			    Log.d("MainActivity","Service unbound");
+				finish();
 			}
 		}
+	}; 
+	
+	private Handler messageHandler = new Handler();
+	class RunnableForArduinoService implements Runnable {
+	  	public long msg; // 
+			@Override
+			public void run() {
+				if (msg==1) { 
+					Log.d("hier passier ein schei§" , "absolut nix");
+				}
+			}
+	  	 
+	  }  
+
+	private ArduinoService.MyServiceBinder arduinoBinder = null;
+	private ServiceConnection arduinoConnection = 
+		new ServiceConnection() {
+
+		@Override
+		public void onServiceConnected(ComponentName arg0, IBinder arg1) {
+			arduinoBinder = (ArduinoService.MyServiceBinder) arg1;
+			arduinoBinder.setRunnable(new RunnableForArduinoService());
+			arduinoBinder.setActivityCallbackHandler(messageHandler);
+			Log.d("MainActivity","Arduino Service is connected!");				
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName arg0) {		
+			Log.d("MainActivity","Arduino Service is disconnected!");	
+		}
+
 	};
 	
-	
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -178,17 +194,17 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
             String name = savedInstanceState.getString(PENDING_ACTION_BUNDLE_KEY);
             pendingAction = PendingAction.valueOf(name);
         }
-        
+        /*
         mUsbManager = UsbManager.getInstance(this);
 		mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
 		IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
 		filter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
-		registerReceiver(mUsbReceiver, filter);
+		registerReceiver(mUsbReceiver, filter);*/
+        
+        IntentFilter filter = new IntentFilter("com.google.android.BeyondTheDesktop.action.USB_PERMISSION");
+		filter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
+		registerReceiver(mUsbReceiver, filter);	
  
-		if (getLastNonConfigurationInstance() != null) {
-			mAccessory = (UsbAccessory) getLastNonConfigurationInstance();
-			openAccessory(mAccessory);
-		}
 
         setContentView(R.layout.main);
         
@@ -243,14 +259,16 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 
                 case R.id.toggleButtonLED:
                        
-                        byte[] buffer = new byte[1];
+                	byte[] buffer = new byte[1];
                          
                         if(lightButton.isChecked()){
-                                buffer[0]=(byte)0; // button says on, light is off
-                                bufferWrite(buffer);
+                        	Log.d("Buffer0: ", Byte.valueOf(buffer[0]).toString());
+                        	buffer[0]=(byte)0; // button says on, light is off
+                        	arduinoBinder.sendMessageToArduino(buffer);
                         }else{
-                                buffer[0]=(byte)1; // button says off, light is on
-                                bufferWrite(buffer);
+                        	buffer[0]=(byte)1; // button says off, light is on
+                        	Log.d("Buffer1: ", Byte.valueOf(buffer[0]).toString());
+                        	arduinoBinder.sendMessageToArduino(buffer);
                         }
                         break;
                 }
@@ -261,10 +279,15 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     
     @Override
     protected void onResume() {
+    	
+    	final Intent netzwerkIntent = new Intent(getApplicationContext(), ArduinoService.class);
+		bindService(netzwerkIntent, arduinoConnection, Context.BIND_AUTO_CREATE);
+		    
         super.onResume();
         uiHelper.onResume();
         //updateUI();
         changeToEventActivity();
+        /*
         if (mInputStream != null && mOutputStream != null) {
 			return;
 		}
@@ -284,7 +307,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 			}
 		} else {
 			Log.d(TAG, "mAccessory is null");
-		}
+		}*/
     }
 
     @Override
@@ -304,7 +327,6 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     public void onPause() {
         super.onPause();
         uiHelper.onPause();
-        closeAccessory();
     }
 
     @Override
@@ -313,31 +335,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         super.onDestroy();
         uiHelper.onDestroy();
     }
-    
-    private void openAccessory(UsbAccessory accessory) {
-		mFileDescriptor = mUsbManager.openAccessory(accessory);
-		if (mFileDescriptor != null) {
-			mAccessory = accessory;
-			FileDescriptor fd = mFileDescriptor.getFileDescriptor();
-			mInputStream = new FileInputStream(fd);
-			mOutputStream = new FileOutputStream(fd);
-			Log.d(TAG, "accessory opened");
-		} else {
-			Log.d(TAG, "accessory open fail");
-		}
-	}
-    
-    private void closeAccessory() {
-		try {
-			if (mFileDescriptor != null) {
-				mFileDescriptor.close();
-			}
-		} catch (IOException e) {
-		} finally {
-			mFileDescriptor = null;
-			mAccessory = null;
-		}
-	}
+
 
     private void onSessionStateChange(Session session, SessionState state, Exception exception) {
         if (pendingAction != PendingAction.NONE &&
@@ -364,25 +362,14 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         showFriendsEvents.setEnabled(enableButtons);
         showMyEvents.setEnabled(enableButtons);
 
-        //show or hide content, depending on login-status
+      /*  //show or hide content, depending on login-status
         if (enableButtons && user != null) {
         	showContentLoggedIn();
         } else {
         	hideContentLoggedOut();
-        }
+        }*/
     }
     
-    @Override
-	public Object onRetainNonConfigurationInstance() {
-		if (mAccessory != null) {
-			return mAccessory;
-		} else {
-			return super.onRetainNonConfigurationInstance();
-		}
-	}
- 
- 
-
     private void changeToEventActivity() {
     	   Session session = Session.getActiveSession();
            if (session != null && session.isOpened()) {
@@ -392,7 +379,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     }
     
     //show content if logged in
-    private void showContentLoggedIn() {
+   /* private void showContentLoggedIn() {
     	//make profile picture and buttons visible and enabled
         profilePictureView.setProfileId(user.getId());
         profilePictureView.setVisibility(View.VISIBLE);
@@ -429,13 +416,17 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         layoutView.setBackgroundColor(Color.WHITE);  
     }
     
-    private void bufferWrite(byte[] buffer) {
+    public void bufferWrite(byte[] buffer) {
+    	
+    	Log.d("buffer: ", Byte.valueOf(buffer[0]).toString());
+    	
     	if (mOutputStream != null) {
 			try {
 				mOutputStream.write(buffer);
+				//Log.d("Outputstream: ", mOutputStream.write(buffer));
 			} catch (IOException e) {
 				Log.e(TAG, "write failed", e);
 			}
 		}
-    }
+    }*/
 } //end class
