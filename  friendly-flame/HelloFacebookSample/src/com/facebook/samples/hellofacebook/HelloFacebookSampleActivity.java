@@ -147,7 +147,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
 		@Override
 		public void onServiceConnected(ComponentName arg0, IBinder arg1) {
 			arduinoBinder = (ArduinoService.MyServiceBinder) arg1;
-			arduinoBinder.setRunnable(new RunnableForArduinoService());
+			//arduinoBinder.setRunnable(new RunnableForArduinoService());
 			arduinoBinder.setActivityCallbackHandler(messageHandler);
 			Log.d("MainActivity","Arduino Service is connected!");				
 		}

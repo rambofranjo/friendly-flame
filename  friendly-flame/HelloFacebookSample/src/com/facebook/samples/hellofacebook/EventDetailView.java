@@ -3,15 +3,25 @@ package com.facebook.samples.hellofacebook;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.android.future.usb.UsbManager;
 import com.facebook.HttpMethod;
 import com.facebook.Request;
 import com.facebook.Response;
 import com.facebook.Session;
 import com.facebook.model.GraphObject;
 import com.facebook.samples.hellofacebook.R;
+import com.facebook.samples.hellofacebook.HelloFacebookSampleActivity.RunnableForArduinoService;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
@@ -39,6 +49,37 @@ public class EventDetailView extends Activity {
 //    private Flame flame = new Flame();
 		
     
+    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			 if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
+			    unbindService(arduinoConnection);
+			    Log.d("MainActivity","Service unbound");
+				finish();
+			}
+		}
+	}; 
+	
+    private Handler messageHandler = new Handler();
+    private ArduinoService.MyServiceBinder arduinoBinder = null;
+	private ServiceConnection arduinoConnection = 
+		new ServiceConnection() {
+
+		@Override
+		public void onServiceConnected(ComponentName arg0, IBinder arg1) {
+			arduinoBinder = (ArduinoService.MyServiceBinder) arg1;
+			//arduinoBinder.setRunnable(new RunnableForArduinoService());
+			arduinoBinder.setActivityCallbackHandler(messageHandler);
+			Log.d("MainActivity","Arduino Service is connected!");				
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName arg0) {		
+			Log.d("MainActivity","Arduino Service is disconnected!");	
+		}
+
+	};
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +108,11 @@ public class EventDetailView extends Activity {
 		//get details for current event
 		getAllEvents(query_allEvents);
 		getAllEvents(query_eventStatus);
+		
+		IntentFilter filter = new IntentFilter("com.google.android.BeyondTheDesktop.action.USB_PERMISSION");
+		filter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
+		registerReceiver(mUsbReceiver, filter);	
+		
 	}
 
 	@Override
@@ -191,26 +237,32 @@ public class EventDetailView extends Activity {
 				//save attributes in multidimensional arrays
 				userRSVP[0][0] = json_obj.getString("rsvp_status");
 				String status = "";
-				String color;
+				byte[] flamecolor = new byte[1];
 				
 				if (userRSVP[0][0].equals("attending")) {
 					status = "zugesagt";
-					color = "green";
+					//green
+					flamecolor[0]=(byte)1;
 				} else if (userRSVP[0][0].equals("declined")) {
 					status = "abgesagt";
-					color = "red";
+					//red
+					flamecolor[0]=(byte)0;
 				} else if (userRSVP[0][0].equals("unsure")) {
 					status = "unsicher";
-					color = "orange";
+					//orange
+					flamecolor[0]=(byte)2;
 				} else {
 					status = "noch nicht beantwortet";
-					color = "blue";
+					//blue
+					flamecolor[0]=(byte)3;
 				}
 				
 				
 				Log.d("rsvp", userRSVP[0][0]);
 				
 				rsvpText.setText("Status: " + status);
+				Log.d("Flamecolor: ", Byte.valueOf(flamecolor[0]).toString());
+				arduinoBinder.sendMessageToArduino(flamecolor);
 //				flame.flameConnector(color);
 				//set textviews with results from FQL query to certain event
 //				nameText.setText("Event: " + userAllEvents[0][1]);
@@ -221,5 +273,15 @@ public class EventDetailView extends Activity {
 				t.printStackTrace();
 			}
 		}
+	    
+	    @Override
+	    protected void onResume() {
+	    	
+	    	final Intent netzwerkIntent = new Intent(getApplicationContext(), ArduinoService.class);
+			bindService(netzwerkIntent, arduinoConnection, Context.BIND_AUTO_CREATE);
+			    
+	        super.onResume();
+	      
+	    }
 
 } //end of class
