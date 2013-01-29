@@ -30,6 +30,7 @@ import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -52,7 +53,7 @@ import java.io.IOException;
 import java.util.*;
 
 //main activity for this application
-public class HelloFacebookSampleActivity extends Activity {
+public class HelloFacebookSampleActivity extends Activity implements OnClickListener {
 
     private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
     // TAG is used to debug in Android logcat console
@@ -63,6 +64,7 @@ public class HelloFacebookSampleActivity extends Activity {
     private Button showFriendsEvents;
     private Button showMyEvents;
     private LoginButton loginButton;
+    private ToggleButton lightButton;
     private ProfilePictureView profilePictureView;
     private ImageView logo;
     private TextView greeting;
@@ -229,7 +231,33 @@ public class HelloFacebookSampleActivity extends Activity {
         appTitle = (TextView) findViewById(R.id.app_title);
         welcome = (TextView) findViewById(R.id.welcome);
         logo = (ImageView) findViewById(R.id.logo);
+        
+        //BUTTONS
+        lightButton = (ToggleButton) findViewById(R.id.toggleButtonLED);
+        lightButton.setOnClickListener(this);
     }
+    
+        @Override
+        public void onClick(View arg0) {
+        	switch (arg0.getId()) {
+
+                case R.id.toggleButtonLED:
+                       
+                        byte[] buffer = new byte[1];
+                         
+                        if(lightButton.isChecked()){
+                                buffer[0]=(byte)0; // button says on, light is off
+                                bufferWrite(buffer);
+                        }else{
+                                buffer[0]=(byte)1; // button says off, light is on
+                                bufferWrite(buffer);
+                        }
+                        break;
+                }
+        }
+
+
+    
     
     @Override
     protected void onResume() {
@@ -353,23 +381,7 @@ public class HelloFacebookSampleActivity extends Activity {
 		}
 	}
  
-    /*
-    @SuppressWarnings("incomplete-switch")
-    private void handlePendingAction() {
-        PendingAction previouslyPendingAction = pendingAction;
-        // These actions may re-set pendingAction if they are still pending, but we assume they
-        // will succeed.
-        pendingAction = PendingAction.NONE;
-
-        switch (previouslyPendingAction) {
-            case POST_PHOTO:
-                break;
-            case POST_STATUS_UPDATE:
-                break;
-        }
-    }
-    
-    */
+ 
 
     private void changeToEventActivity() {
     	   Session session = Session.getActiveSession();
