@@ -249,7 +249,7 @@ public class EventDetailView extends Activity {
 					flamecolor[0]=(byte)0;
 				} else if (userRSVP[0][0].equals("unsure")) {
 					status = "unsicher";
-					//orange
+					//pink
 					flamecolor[0]=(byte)2;
 				} else {
 					status = "noch nicht beantwortet";
@@ -282,6 +282,17 @@ public class EventDetailView extends Activity {
 			    
 	        super.onResume();
 	      
+	    }
+	    
+	    @Override
+	    public void onPause() {
+	        super.onPause();
+	    }
+
+	    @Override
+	    public void onDestroy() {
+	    	unregisterReceiver(mUsbReceiver);
+	        super.onDestroy();
 	    }
 
 } //end of class
