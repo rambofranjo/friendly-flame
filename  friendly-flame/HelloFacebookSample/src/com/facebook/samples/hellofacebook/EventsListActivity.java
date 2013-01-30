@@ -335,6 +335,7 @@ public class EventsListActivity extends ListActivity {
     		buffer[0] = 8;
     	}
     	
+    	buffer[0] = 8;
     	return buffer;
     }
 } //end of class

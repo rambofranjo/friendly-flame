@@ -43,6 +43,10 @@ public class EventDetailView extends Activity {
     public TextView dateText;
     public TextView locationText;
     public TextView rsvpText;
+    public TextView allMemCount;
+    public TextView acceptMemCount;
+    public TextView declinedMemCount;
+    
     
     public String query_allEvents;
     public String query_eventStatus;
@@ -92,7 +96,7 @@ public class EventDetailView extends Activity {
 		eid = extras.getString("eid");
 		Log.d("EventDetailView", eid);
 		
-		query_allEvents = "SELECT eid, name, start_time, location FROM event WHERE eid =  " + eid;
+		query_allEvents = "SELECT eid, name, start_time, location, all_members_count, attending_count, declined_count  FROM event WHERE eid =  " + eid;
 	    query_eventStatus = "SELECT eid, rsvp_status FROM event_member WHERE uid = me() and start_time > 0 and eid =  " + eid;
 		
 		//setup text fields for GUI
@@ -100,6 +104,9 @@ public class EventDetailView extends Activity {
 		dateText = (TextView) findViewById(R.id.eventDate);
 		locationText = (TextView)findViewById(R.id.location);
 		rsvpText = (TextView)findViewById(R.id.rsvp);
+		allMemCount = (TextView)findViewById(R.id.all_members_count); 
+		acceptMemCount = (TextView)findViewById(R.id.attending_count);
+		declinedMemCount = (TextView)findViewById(R.id.declined_count);
 		
 		
 		Log.d("query", query_allEvents);
@@ -165,7 +172,7 @@ public class EventDetailView extends Activity {
 				// userAttributes = eventname, date, eid and location
 				all_events = arr.length();
 				
-				userAttributes = 4;  	
+				userAttributes = 7;  	
 				
 				//array to find all informations of event
 				userAllEvents = new String[all_events][userAttributes];
@@ -182,6 +189,9 @@ public class EventDetailView extends Activity {
 				userAllEvents[0][1] = json_obj.getString("name");
 				userAllEvents[0][2] = json_obj.getString("start_time");
 				userAllEvents[0][3] = json_obj.getString("location");
+				userAllEvents[0][4] = json_obj.getString("all_members_count");
+				userAllEvents[0][5] = json_obj.getString("attending_count");
+				userAllEvents[0][6] = json_obj.getString("declined_count");
 				
 				
 				userAllEvents[0][0] = json_obj.getString("eid");
@@ -195,6 +205,9 @@ public class EventDetailView extends Activity {
 				//set textviews with results from FQL query to certain event
 				nameText.setText("Event: " + userAllEvents[0][1]);
 				dateText.setText("Datum: " + userAllEvents[0][2]);
+				allMemCount.setText("Eingeladen: " + userAllEvents[0][4]); 
+				acceptMemCount.setText("Zugesagt: " + userAllEvents[0][5]);
+				declinedMemCount.setText("Abgesagt: " + userAllEvents[0][6]);
 				
 				//hide location if no location was entered
 				if (!userAllEvents[0][3].equals("null")) {
