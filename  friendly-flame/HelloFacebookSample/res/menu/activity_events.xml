@@ -11,14 +11,4 @@
         android:icon="@drawable/icon"
         android:showAsAction="ifRoom|withText"/>
   
-    <item android:id="@+id/create_event"
-        android:title="@string/create_event"
-        android:icon="@drawable/icon_create"
-        android:showAsAction="ifRoom|withText" />
-    
-    <item android:id="@+id/logout"
-        android:title="@string/logout"
-        android:icon="@drawable/computer"
-        android:showAsAction="ifRoom|withText"    />
-
 </menu>

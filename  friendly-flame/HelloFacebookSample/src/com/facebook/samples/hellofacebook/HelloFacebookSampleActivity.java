@@ -86,7 +86,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     
     //define needed permissions
     String[] permissions = { "offline_access", "publish_stream", "user_photos", "publish_checkins",
-    "photo_upload" };
+    "photo_upload", "rsvp_event" };
     
     String[] user_permissions = { "user_about_me", "user_activities", "user_birthday",
             "user_checkins", "user_education_history", "user_events", "friends_events", "user_groups",

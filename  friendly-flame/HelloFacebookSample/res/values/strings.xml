@@ -42,6 +42,9 @@
     <string name="my_events">My events</string>
     <string name="create_event">Create events</string>
     <string name="logout">logout</string>
-    <string name="title_activity_event_detail_view">EventDetailView</string>
+    <string name="title_activity_event_detail_view">Event Detailansicht</string>
+    <string name="create_event_activity_view">Event anlegen</string>
+    
+    
 
 </resources>

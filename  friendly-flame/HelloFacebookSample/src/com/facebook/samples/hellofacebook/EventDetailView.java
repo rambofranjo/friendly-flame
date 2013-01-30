@@ -8,10 +8,12 @@ import com.facebook.HttpMethod;
 import com.facebook.Request;
 import com.facebook.Response;
 import com.facebook.Session;
+import com.facebook.android.FacebookError;
 import com.facebook.model.GraphObject;
 import com.facebook.samples.hellofacebook.R;
 import com.facebook.samples.hellofacebook.HelloFacebookSampleActivity.RunnableForArduinoService;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -24,10 +26,14 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 //detailview for events
-public class EventDetailView extends Activity {
+public class EventDetailView extends Activity implements OnClickListener {
 
 	
 	public String eid;
@@ -46,6 +52,8 @@ public class EventDetailView extends Activity {
     public TextView allMemCount;
     public TextView acceptMemCount;
     public TextView declinedMemCount;
+    
+    private Button detailButton; 
     
     
     public String query_allEvents;
@@ -107,6 +115,8 @@ public class EventDetailView extends Activity {
 		allMemCount = (TextView)findViewById(R.id.all_members_count); 
 		acceptMemCount = (TextView)findViewById(R.id.attending_count);
 		declinedMemCount = (TextView)findViewById(R.id.declined_count);
+		detailButton = (Button)findViewById(R.id.button_detail);
+		detailButton.setOnClickListener(this);
 		
 		
 		Log.d("query", query_allEvents);
@@ -307,5 +317,46 @@ public class EventDetailView extends Activity {
 	    	unregisterReceiver(mUsbReceiver);
 	        super.onDestroy();
 	    }
+	    
+	    @Override
+		public void onClick(View arg0) {
+			switch (arg0.getId()) {
+			case R.id.button_detail:
+				//rsvpEventStatus("attending");
+				
+				String uri = "fb://page/" + eid;
+				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+				
+				/*
+				String facebookScheme = "fb://https://graph.facebook.com/" +"324439851003129";
+				Intent facebookIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(facebookScheme)); 
+				*/
+				startActivity(intent);	
+				
+				
+				
+				break;
+				
+			
+			
+			}
+		}
+	    
+	    public void rsvpEventStatus(String status) {
+	    	/*
+	    	Bundle params = new Bundle();
+            params.putString("url",
+                    "http://graph.facebook.com/"+eid+"/attending");
+            
+            Utility.mAsyncRunner.request("me/events", params,
+                    "POST", null, null);
+            
+            */
+            
+	    }
+	    
+	    
+	    
+	    
 
 } //end of class

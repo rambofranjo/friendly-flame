@@ -150,13 +150,6 @@ public class EventsListActivity extends ListActivity {
             	startActivity(new Intent(this, MyEventsListActivity.class));
                 break;
               
-            case R.id.create_event:
-                Toast.makeText(this, "Create Events", Toast.LENGTH_SHORT).show();
-                break;
-                
-            case R.id.logout:
-            	Toast.makeText(this, "logout", Toast.LENGTH_SHORT).show();
-            	break; 
         }
         return true;
     }
