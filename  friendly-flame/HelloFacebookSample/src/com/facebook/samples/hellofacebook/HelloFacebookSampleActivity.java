@@ -88,13 +88,16 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
     String[] permissions = { "offline_access", "publish_stream", "user_photos", "publish_checkins",
     "photo_upload", "rsvp_event" };
     
+    String[] user_permissions = { "user_events", "friends_events"};
+    
+    /*
     String[] user_permissions = { "user_about_me", "user_activities", "user_birthday",
             "user_checkins", "user_education_history", "user_events", "friends_events", "user_groups",
             "user_hometown", "user_interests", "user_likes", "user_location", "user_notes",
             "user_online_presence", "user_photos", "user_photo_video_tags", "user_relationships",
             "user_relationship_details", "user_religion_politics", "user_status", "user_videos",
             "user_website", "user_work_history"};
-    
+    */
     UsbAccessory mAccessory;
 	ParcelFileDescriptor mFileDescriptor;
 	FileInputStream mInputStream;
@@ -251,6 +254,7 @@ public class HelloFacebookSampleActivity extends Activity implements OnClickList
         //BUTTONS
         lightButton = (ToggleButton) findViewById(R.id.toggleButtonLED);
         lightButton.setOnClickListener(this);
+        lightButton.setVisibility(View.INVISIBLE);
     }
     
         @Override
